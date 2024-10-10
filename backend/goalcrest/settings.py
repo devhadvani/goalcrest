@@ -142,18 +142,18 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
-SERVER_EMAIL = 'devhadvani147@gmail.com'  # Email address used for sending error messages
+SERVER_EMAIL = os.getenv('SERVER_EMAIL')
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-DEFAULT_FROM_EMAIL = 'devhadvani147@gmail.com'  # The default 'from' email address for outgoing emails
-EMAIL_HOST = 'smtp.gmail.com'  # Use Gmail's SMTP server
-EMAIL_HOST_USER = 'devhadvani147@gmail.com'  # Your Gmail address
-EMAIL_HOST_PASSWORD = 'gbmh ruds njue aipq'  # Your Gmail app password
-EMAIL_PORT = 587  # Use 587 for TLS
-EMAIL_USE_TLS = True  # Use TLS for secure email sending
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
+EMAIL_HOST = os.getenv('EMAIL_HOST')
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))  # Default to 587 if not set
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS') == 'True'  # Convert to boolean
 
-ACCOUNT_EMAIL_VERIFICATION = "mandatory"  # or "optional"
-ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 1
+ACCOUNT_EMAIL_VERIFICATION = os.getenv('ACCOUNT_EMAIL_VERIFICATION', 'mandatory')
+ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = int(os.getenv('ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS', 1))
+
 
 DJOSER = {
     'PASSWORD_RESET_CONFIRM_URL': '#/password/reset/confirm/{uid}/{token}',
