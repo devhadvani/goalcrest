@@ -1,0 +1,46 @@
+# .gitignore
+
+# Ignore Python bytecode and caches
+*.pyc
+__pycache__/
+
+# Virtual environment folder (venv)
+venv/
+
+# Django specific ignores
+db.sqlite3
+media/
+staticfiles/
+*.log
+
+# Environment variables file
+.env
+
+# Ignore migrations (optional, if you want to keep these files out)
+# */migrations/*.pyc
+# */migrations/*.pyo
+# */migrations/__pycache__/
+
+# Ignore IDE/editor files
+# .vscode/
+# .idea/
+# *.swp
+# *.swo
+
+# Ignore macOS specific files
+.DS_Store
+
+# Docker
+**/Dockerfile.*
+docker-compose.override.yml
+*.tar
+
+# Node specific ignores
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+build/
+
+# DevContainer setup (optional if not needed in the repo)
+.devcontainer/

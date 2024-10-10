@@ -1,0 +1,19 @@
+{
+    "name": "GoalCrest Dev Container",
+    "dockerComposeFile": "../docker-compose.yml",
+    "service": "backend",
+    "workspaceFolder": "/app",
+    "extensions": [
+      "ms-python.python",
+      "dbaeumer.vscode-eslint",
+      "esbenp.prettier-vscode"
+    ],
+    "settings": {
+      "python.pythonPath": "/usr/local/bin/python"
+    },
+    "remoteEnv": {
+      "DJANGO_SETTINGS_MODULE": "backend.settings"
+    },
+    "postCreateCommand": "pip install -r requirements.txt && npm install"
+  }
+  
