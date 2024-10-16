@@ -34,25 +34,26 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'finance',
+    'corsheaders',
     'rest_framework',
+    "rest_framework_simplejwt",
     'djoser',
-    'rest_framework.authtoken',
-    ]
+    'finance',
+]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-        'corsheaders.middleware.CorsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -119,11 +120,10 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
-    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+    'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
 }
 
 
@@ -166,6 +166,19 @@ ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = int(os.getenv('ACCOUNT_EMAIL_CONFIRMATI
 DOMAIN = 'localhost:3000' 
 SITE_NAME = 'Goal Crest'
 
+
+SIMPLE_JWT = {
+    "AUTH_HEADER_TYPES": (
+        "Bearer",
+        "JWT"),
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=5),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=60),
+    "SIGNING_KEY": "XmcaGCXyIQ7FtXH7CJNUajPlNf4KmVLp",
+    "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",
+    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
+}
+
+
 DJOSER = {
     'LOGIN_FIELD': 'email',
     "USER_CREATE_PASSWORD_RETYPE": True,
@@ -178,16 +191,10 @@ DJOSER = {
     'USERNAME_RESET_CONFIRM_URL': 'username/reset/confirm/{uid}/{token}',
     'ACTIVATION_URL': 'activate/{uid}/{token}',
     'SEND_ACTIVATION_EMAIL': True,
-    'DOMAIN': 'localhost:3000', 
     'SITE_NAME': 'Goal Crest',
-}
-SIMPLE_JWT = {
-    "AUTH_HEADER_TYPES": (
-        "Bearer",
-        "JWT"),
-    "ACCESS_TOKEN_LIFETIME": timedelta(days=5),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=60),
-    "SIGNING_KEY": "XmcaGCXyIQ7FtXH7CJNUajPlNf4KmVLp",
-    "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",
-    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
+        'SERIALIZERS': {
+        'user_create': 'finance.serializers.CreateUserSerializer',
+        'user': "finance.serializers.CreateUserSerializer",
+        'user_delete': "djoser.serializers.UserDeleteSerializer",      
+    },
 }
