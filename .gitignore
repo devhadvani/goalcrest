@@ -31,7 +31,6 @@ staticfiles/
 .DS_Store
 
 # Docker
-**/Dockerfile.*
 docker-compose.override.yml
 *.tar
 
