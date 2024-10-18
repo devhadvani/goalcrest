@@ -1,6 +1,8 @@
+// src/pages/Dashboard.js
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchUserProfile } from '../features/auth/authSlice';
+import LogoutButton from '../components/LogoutButton'; // Import the LogoutButton
 
 const Dashboard = () => {
   const dispatch = useDispatch();
@@ -16,9 +18,7 @@ const Dashboard = () => {
     return <p>Loading...</p>;
   }
 
-  // If error is an object, we need to handle it properly
   if (error) {
-    // Check if error has a 'detail' field, otherwise display the error as a string
     return <p>Error loading user data: {error.detail ? error.detail : error.toString()}</p>;
   }
 
@@ -34,6 +34,8 @@ const Dashboard = () => {
       ) : (
         <p>No user information available.</p>
       )}
+      {/* Logout Button */}
+      <LogoutButton />
     </div>
   );
 };
