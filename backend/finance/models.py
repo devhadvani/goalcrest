@@ -5,6 +5,10 @@ from django.core.validators import validate_email
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User
+from django.utils import timezone
+from datetime import timedelta
+
 # Create your models here.
 
 
@@ -101,7 +105,113 @@ class User(AbstractBaseUser, PermissionsMixin):
     def get_full_name(self):
         return f"{self.first_name} {self.last_name}"
 
+class Category(models.Model):
+    """Model to define different categories for income and expenses"""
+    CATEGORY_TYPES = (
+        ('income', 'Income'),
+        ('expense', 'Expense'),
+    )
+    name = models.CharField(max_length=100)
+    type = models.CharField(max_length=10, choices=CATEGORY_TYPES)
 
-class Person(models.Model):
-    first_name = models.CharField(max_length=30)
-    last_name = models.CharField(max_length=30)
+    def __str__(self):
+        return self.name
+
+class Income(models.Model):
+    """Model to track income with support for fixed and variable income"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    description = models.CharField(max_length=255, blank=True, null=True)
+    date = models.DateField(default=timezone.now)
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, limit_choices_to={'type': 'income'})
+    is_recurring = models.BooleanField(default=False)
+    recurrence_interval = models.CharField(max_length=20, choices=[('monthly', 'Monthly'), ('yearly', 'Yearly')], blank=True, null=True)
+    next_occurrence = models.DateField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        # Automatically set the next occurrence for recurring income
+        if self.is_recurring and not self.next_occurrence:
+            if self.recurrence_interval == 'monthly':
+                self.next_occurrence = self.date + timedelta(days=30)
+            elif self.recurrence_interval == 'yearly':
+                self.next_occurrence = self.date + timedelta(days=365)
+        super(Income, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Income {self.amount} - {self.user.username}"
+
+class Expense(models.Model):
+    """Model to track expenses with category, recurrence, and customization"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    description = models.CharField(max_length=255, blank=True, null=True)
+    date = models.DateField(default=timezone.now)
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, limit_choices_to={'type': 'expense'})
+    is_recurring = models.BooleanField(default=False)
+    recurrence_interval = models.CharField(max_length=20, choices=[('weekly', 'Weekly'), ('monthly', 'Monthly'), ('yearly', 'Yearly')], blank=True, null=True)
+    next_occurrence = models.DateField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        # Automatically set the next occurrence for recurring expenses
+        if self.is_recurring and not self.next_occurrence:
+            if self.recurrence_interval == 'weekly':
+                self.next_occurrence = self.date + timedelta(days=7)
+            elif self.recurrence_interval == 'monthly':
+                self.next_occurrence = self.date + timedelta(days=30)
+            elif self.recurrence_interval == 'yearly':
+                self.next_occurrence = self.date + timedelta(days=365)
+        super(Expense, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Expense {self.amount} - {self.user.username}"
+
+class Budget(models.Model):
+    """Model for users to define budgets for their income and expenses"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    date_from = models.DateField()
+    date_to = models.DateField()
+
+    def __str__(self):
+        return f"Budget for {self.category.name} - {self.user.username}"
+
+class Transaction(models.Model):
+    """Model to log each transaction, both income and expense"""
+    TRANSACTION_TYPES = (
+        ('income', 'Income'),
+        ('expense', 'Expense'),
+    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    transaction_type = models.CharField(max_length=10, choices=TRANSACTION_TYPES)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    date = models.DateField(default=timezone.now)
+    description = models.CharField(max_length=255, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.transaction_type.capitalize()} {self.amount} - {self.user.username}"
+
+class RecurringIncome(models.Model):
+    """Model to keep track of recurring income separately (for historical purposes)"""
+    income = models.ForeignKey(Income, on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    date = models.DateField()
+
+    def __str__(self):
+        return f"Recurring Income - {self.amount} on {self.date}"
+
+class RecurringExpense(models.Model):
+    """Model to keep track of recurring expenses separately"""
+    expense = models.ForeignKey(Expense, on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    date = models.DateField()
+
+    def __str__(self):
+        return f"Recurring Expense - {self.amount} on {self.date}"
