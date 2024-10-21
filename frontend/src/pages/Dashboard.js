@@ -1,41 +1,29 @@
-// src/pages/Dashboard.js
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchUserProfile } from '../features/auth/authSlice';
-import LogoutButton from '../components/LogoutButton'; // Import the LogoutButton
+import { fetchIncomes, fetchExpenses } from '../features/finance/financeSlice';
 
 const Dashboard = () => {
   const dispatch = useDispatch();
-  const { user, loading, error } = useSelector((state) => state.auth);
+  const { incomes, expenses, loading, error } = useSelector(state => state.finance);
 
   useEffect(() => {
-    if (!user) {
-      dispatch(fetchUserProfile());
-    }
-  }, [dispatch, user]);
+    dispatch(fetchIncomes());
+    dispatch(fetchExpenses());
+  }, [dispatch]);
 
-  if (loading) {
-    return <p>Loading...</p>;
-  }
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error}</p>;
 
-  if (error) {
-    return <p>Error loading user data: {error.detail ? error.detail : error.toString()}</p>;
-  }
+  const totalIncome = incomes.reduce((acc, income) => acc + parseFloat(income.amount), 0);
+  const totalExpenses = expenses.reduce((acc, expense) => acc + parseFloat(expense.amount), 0);
+  const balance = totalIncome - totalExpenses;
 
   return (
     <div>
       <h1>Dashboard</h1>
-      {user ? (
-        <div>
-          <p>Welcome, {user.first_name}!</p>
-          <p>Email: {user.email}</p>
-          {/* Add more user details as needed */}
-        </div>
-      ) : (
-        <p>No user information available.</p>
-      )}
-      {/* Logout Button */}
-      <LogoutButton />
+      <p>Total Income: ${totalIncome}</p>
+      <p>Total Expenses: ${totalExpenses}</p>
+      <p>Balance: ${balance}</p>
     </div>
   );
 };

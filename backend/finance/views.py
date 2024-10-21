@@ -26,6 +26,7 @@ class IncomeListCreateAPIView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         # Assign the current logged-in user to the income
+        print("ser",self.request.user)
         serializer.save(user=self.request.user)
 
 class IncomeDetailAPIView(generics.RetrieveUpdateDestroyAPIView):

@@ -15,13 +15,13 @@ class IncomeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Income
         fields = ['id', 'user', 'amount', 'description', 'date', 'category', 'is_recurring', 'recurrence_interval', 'next_occurrence', 'created_at', 'updated_at']
-        read_only_fields = ['id', 'created_at', 'updated_at', 'next_occurrence']
+        read_only_fields = ['id', 'user','created_at', 'updated_at', 'next_occurrence']
 
 class ExpenseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Expense
         fields = ['id', 'user', 'amount', 'description', 'date', 'category', 'is_recurring', 'recurrence_interval', 'next_occurrence', 'created_at', 'updated_at']
-        read_only_fields = ['id', 'created_at', 'updated_at', 'next_occurrence']
+        read_only_fields = ['id','user', 'created_at', 'updated_at', 'next_occurrence']
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:

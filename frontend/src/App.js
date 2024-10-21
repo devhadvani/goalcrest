@@ -6,6 +6,9 @@ import Dashboard from './pages/Dashboard';
 import ResetPassword from './pages/ResetPassword';
 import ActivatePage from './pages/ActivatePage';
 import ProtectedRoute from './components/ProtectedRoute';
+import AddIncome from './pages/AddIncome';  // Adjust import path based on your folder structure
+import AddExpense from './pages/AddExpense';
+
 
 function App() {
   return (
@@ -42,6 +45,8 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/activate/:uid/:token" element={<ActivatePage />} />
+        <Route path="/add-income" element={<AddIncome />} />
+        <Route path="/add-expense" element={<AddExpense />} />
       </Routes>
     </Router>
   );
