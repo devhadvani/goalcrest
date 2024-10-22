@@ -73,6 +73,24 @@ export const addExpense = createAsyncThunk('finance/addExpense', async (expenseD
   }
 });
 
+export const fetchCategories = createAsyncThunk('finance/fetchCategories', async (_, thunkAPI) => {
+  try {
+    const state = thunkAPI.getState();
+    const accessToken = state.auth.accessToken;
+
+    const response = await axios.get(`${API_URL}/categories/`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    // Filter only 'income' categories
+    const incomeCategories = response.data.filter(category => category.type === 'income');
+    return incomeCategories;
+  } catch (error) {
+    return thunkAPI.rejectWithValue(error.response.data);
+  }
+});
+
 // Finance slice
 const financeSlice = createSlice({
   name: 'finance',
@@ -92,6 +110,18 @@ const financeSlice = createSlice({
       state.incomes = action.payload;
     });
     builder.addCase(fetchIncomes.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    });
+
+    builder.addCase(fetchCategories.pending, (state) => {
+      state.loading = true;
+    });
+    builder.addCase(fetchCategories.fulfilled, (state, action) => {
+      state.loading = false;
+      state.categories = action.payload;
+    });
+    builder.addCase(fetchCategories.rejected, (state, action) => {
       state.loading = false;
       state.error = action.payload;
     });

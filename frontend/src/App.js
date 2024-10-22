@@ -6,7 +6,7 @@ import Dashboard from './pages/Dashboard';
 import ResetPassword from './pages/ResetPassword';
 import ActivatePage from './pages/ActivatePage';
 import ProtectedRoute from './components/ProtectedRoute';
-import AddIncome from './pages/AddIncome';  // Adjust import path based on your folder structure
+import AddIncome from './pages/AddIncome';  
 import AddExpense from './pages/AddExpense';
 
 
