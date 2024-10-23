@@ -1,43 +1,52 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { addIncome,fetchCategories } from '../features/finance/financeSlice';
-import axios from 'axios';
+import { addIncome, fetchCategories } from '../features/finance/financeSlice';
 
-const AddIncome = () => {
+const AddIncome = ({ initialDate, onSuccess, onCancel }) => {
+  console.log("i am here")
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
-  const [date, setDate] = useState('');
   const [isRecurring, setIsRecurring] = useState(false);
   const [recurrenceInterval, setRecurrenceInterval] = useState('');
+  
   const dispatch = useDispatch();
   const { categories = [], loading } = useSelector((state) => state.finance);
 
+  // useEffect(() => {
+  //   dispatch(fetchCategories());
+  // }, [dispatch]);
 
-  // Fetch categories from the API
-  useEffect(() => {
-    dispatch(fetchCategories());
-  }, [dispatch]);
-
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    
     const incomeData = {
-      amount,
+      amount: Number(amount),
       description,
       category,
-      date,
+      date: initialDate,
       is_recurring: isRecurring,
       recurrence_interval: isRecurring ? recurrenceInterval : null,
     };
-    console.log("income",incomeData);
-    dispatch(addIncome(incomeData));
+
+    try {
+      await dispatch(addIncome(incomeData)).unwrap();
+      onSuccess?.();
+      // Reset form
+      setAmount('');
+      setDescription('');
+      setCategory('');
+      setIsRecurring(false);
+      setRecurrenceInterval('');
+    } catch (error) {
+      console.error('Failed to add income:', error);
+    }
   };
 
   return (
-    <div className="add-income-container">
-      <h1>Add Income</h1>
-      <form onSubmit={handleSubmit} className="add-income-form">
+    <div className="add-form">
+      <h2>Add Income</h2>
+      <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label htmlFor="amount">Amount</label>
           <input
@@ -47,6 +56,8 @@ const AddIncome = () => {
             onChange={(e) => setAmount(e.target.value)}
             placeholder="Enter amount"
             required
+            step="0.01"
+            min="0"
           />
         </div>
 
@@ -61,44 +72,34 @@ const AddIncome = () => {
           />
         </div>
 
-
-  {/* Category dropdown */}
-      <label htmlFor="category">Category</label>
-      <select
-        id="category"
-        value={category}
-        onChange={(e) => setCategory(e.target.value)}
-        disabled={loading} // Disable dropdown while loading
-      >
-        <option value="">Select Category</option>
-        {/* Fallback to [] prevents error on categories.map */}
-        {categories.map((category) => (
-          <option key={category.id} value={category.id}>
-            {category.name}
-          </option>
-        ))}
-      </select>
-      <br />
-
         <div className="form-group">
-          <label htmlFor="date">Date</label>
-          <input
-            type="date"
-            id="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
+          <label htmlFor="category">Category</label>
+          <select
+            id="category"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            disabled={loading}
             required
-          />
+          >
+            <option value="">Select Category</option>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.id}>
+                {cat.name}
+              </option>
+            ))}
+          </select>
         </div>
 
-        <div className="form-group">
-          <label htmlFor="is_recurring">Recurring Income?</label>
-          <input
-            type="checkbox"
-            id="is_recurring"
-            checked={isRecurring}
-            onChange={(e) => setIsRecurring(e.target.checked)}
-          />
+        <div className="form-group checkbox">
+          <label htmlFor="is_recurring">
+            <input
+              type="checkbox"
+              id="is_recurring"
+              checked={isRecurring}
+              onChange={(e) => setIsRecurring(e.target.checked)}
+            />
+            Recurring Income
+          </label>
         </div>
 
         {isRecurring && (
@@ -117,9 +118,15 @@ const AddIncome = () => {
           </div>
         )}
 
-        <button type="submit" className="submit-button">Add Income</button>
+        <div className="button-group">
+          <button type="button" onClick={onCancel} className="cancel-button">
+            Cancel
+          </button>
+          <button type="submit" className="submit-button">
+            Add Income
+          </button>
+        </div>
       </form>
-
       {/* Simple styling */}
       <style jsx>{`
         .add-income-container {
