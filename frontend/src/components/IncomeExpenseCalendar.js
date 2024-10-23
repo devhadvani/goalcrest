@@ -163,12 +163,12 @@ const IncomeExpenseCalendar = () => {
                     <div className="add-form-container">
                       {isAddingIncome ? (
                         <AddIncome 
-                          initialDate={formatDate(selectedDate)}
-                          onSuccess={() => {
-                            setShowAddForm(false);
-                            handleDayClick(selectedDate);
-                          }}
-                          onCancel={() => setShowAddForm(false)}
+                        //   initialDate={formatDate(selectedDate)}
+                        //   onSuccess={() => {
+                        //     setShowAddForm(false);
+                        //     handleDayClick(selectedDate);
+                        //   }}
+                        //   onCancel={() => setShowAddForm(false)}
                         />
                       ) : (
                         <AddExpense 

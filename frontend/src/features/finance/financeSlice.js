@@ -75,6 +75,7 @@ export const addExpense = createAsyncThunk('finance/addExpense', async (expenseD
 
 export const fetchCategories = createAsyncThunk('finance/fetchCategories', async (_, thunkAPI) => {
   try {
+    console.log("printitn v")
     const state = thunkAPI.getState();
     const accessToken = state.auth.accessToken;
 
@@ -85,6 +86,7 @@ export const fetchCategories = createAsyncThunk('finance/fetchCategories', async
     });
     // Filter only 'income' categories
     const incomeCategories = response.data.filter(category => category.type === 'income');
+    console.log("income",incomeCategories)
     return incomeCategories;
   } catch (error) {
     return thunkAPI.rejectWithValue(error.response.data);

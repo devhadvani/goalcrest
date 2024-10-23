@@ -2,16 +2,31 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { addExpense } from '../features/finance/financeSlice';
 
-const AddExpense = () => {
+const AddExpense = ({ initialDate, onSuccess, onCancel }) => {
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('');
-  const [date, setDate] = useState('');
+  const [date, setDate] = useState(initialDate || ''); // Initialize date with initialDate prop
   const dispatch = useDispatch();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const op = dispatch(addExpense({ amount, category, date }));
-    console.log(op)
+
+    const expenseData = {
+      amount: Number(amount),
+      category,
+      date,
+    };
+
+    try {
+      await dispatch(addExpense(expenseData)).unwrap();
+      onSuccess?.(); // Call onSuccess if provided
+      // Reset form
+      setAmount('');
+      setCategory('');
+      setDate('');
+    } catch (error) {
+      console.error('Failed to add expense:', error);
+    }
   };
 
   return (
@@ -19,11 +34,13 @@ const AddExpense = () => {
       <h1>Add Expense</h1>
       <form onSubmit={handleSubmit}>
         <input
-          type="text"
+          type="number"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
           placeholder="Amount"
           required
+          step="0.01"
+          min="0"
         />
         <input
           type="text"
