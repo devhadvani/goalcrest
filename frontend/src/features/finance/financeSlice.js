@@ -91,6 +91,41 @@ export const fetchCategories = createAsyncThunk('finance/fetchCategories', async
   }
 });
 
+// Async thunk for fetching incomes by date
+export const fetchIncomesByDate = createAsyncThunk('finance/fetchIncomesByDate', async (date, thunkAPI) => {
+  try {
+    const state = thunkAPI.getState();
+    const accessToken = state.auth.accessToken;
+
+    const response = await axios.get(`${API_URL}/incomes/?date=${date}`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    return thunkAPI.rejectWithValue(error.response.data);
+  }
+});
+
+// Async thunk for fetching expenses by date
+export const fetchExpensesByDate = createAsyncThunk('finance/fetchExpensesByDate', async (date, thunkAPI) => {
+  try {
+    const state = thunkAPI.getState();
+    const accessToken = state.auth.accessToken;
+
+    const response = await axios.get(`${API_URL}/expenses/?date=${date}`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    return thunkAPI.rejectWithValue(error.response.data);
+  }
+});
+
+
 // Finance slice
 const financeSlice = createSlice({
   name: 'finance',
@@ -101,18 +136,7 @@ const financeSlice = createSlice({
     error: null,
   },
   extraReducers: (builder) => {
-    // Handle fetching incomes
-    builder.addCase(fetchIncomes.pending, (state) => {
-      state.loading = true;
-    });
-    builder.addCase(fetchIncomes.fulfilled, (state, action) => {
-      state.loading = false;
-      state.incomes = action.payload;
-    });
-    builder.addCase(fetchIncomes.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
-    });
+
 
     builder.addCase(fetchCategories.pending, (state) => {
       state.loading = true;
@@ -126,44 +150,85 @@ const financeSlice = createSlice({
       state.error = action.payload;
     });
 
-    // Handle adding income
-    builder.addCase(addIncome.pending, (state) => {
-      state.loading = true;
-    });
-    builder.addCase(addIncome.fulfilled, (state, action) => {
-      state.loading = false;
-      state.incomes.push(action.payload); // Add the new income to the list
-    });
-    builder.addCase(addIncome.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
-    });
+ // Handle fetching all incomes
+ builder.addCase(fetchIncomes.pending, (state) => {
+  state.loading = true;
+});
+builder.addCase(fetchIncomes.fulfilled, (state, action) => {
+  state.loading = false;
+  state.incomes = action.payload;
+});
+builder.addCase(fetchIncomes.rejected, (state, action) => {
+  state.loading = false;
+  state.error = action.payload;
+});
 
-    // Handle fetching expenses
-    builder.addCase(fetchExpenses.pending, (state) => {
-      state.loading = true;
-    });
-    builder.addCase(fetchExpenses.fulfilled, (state, action) => {
-      state.loading = false;
-      state.expenses = action.payload;
-    });
-    builder.addCase(fetchExpenses.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
-    });
+// Handle fetching all expenses
+builder.addCase(fetchExpenses.pending, (state) => {
+  state.loading = true;
+});
+builder.addCase(fetchExpenses.fulfilled, (state, action) => {
+  state.loading = false;
+  state.expenses = action.payload;
+});
+builder.addCase(fetchExpenses.rejected, (state, action) => {
+  state.loading = false;
+  state.error = action.payload;
+});
 
-    // Handle adding expense
-    builder.addCase(addExpense.pending, (state) => {
-      state.loading = true;
-    });
-    builder.addCase(addExpense.fulfilled, (state, action) => {
-      state.loading = false;
-      state.expenses.push(action.payload); // Add the new expense to the list
-    });
-    builder.addCase(addExpense.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
-    });
+// Handle fetching incomes by date
+builder.addCase(fetchIncomesByDate.pending, (state) => {
+  state.loading = true;
+});
+builder.addCase(fetchIncomesByDate.fulfilled, (state, action) => {
+  state.loading = false;
+  state.selectedDateIncomes = action.payload;
+});
+builder.addCase(fetchIncomesByDate.rejected, (state, action) => {
+  state.loading = false;
+  state.error = action.payload;
+});
+
+// Handle fetching expenses by date
+builder.addCase(fetchExpensesByDate.pending, (state) => {
+  state.loading = true;
+});
+builder.addCase(fetchExpensesByDate.fulfilled, (state, action) => {
+  state.loading = false;
+  state.selectedDateExpenses = action.payload;
+});
+builder.addCase(fetchExpensesByDate.rejected, (state, action) => {
+  state.loading = false;
+  state.error = action.payload;
+});
+
+// Handle adding income
+builder.addCase(addIncome.pending, (state) => {
+  state.loading = true;
+});
+builder.addCase(addIncome.fulfilled, (state, action) => {
+  state.loading = false;
+  state.incomes.push(action.payload);
+  state.selectedDateIncomes.push(action.payload);
+});
+builder.addCase(addIncome.rejected, (state, action) => {
+  state.loading = false;
+  state.error = action.payload;
+});
+
+// Handle adding expense
+builder.addCase(addExpense.pending, (state) => {
+  state.loading = true;
+});
+builder.addCase(addExpense.fulfilled, (state, action) => {
+  state.loading = false;
+  state.expenses.push(action.payload);
+  state.selectedDateExpenses.push(action.payload);
+});
+builder.addCase(addExpense.rejected, (state, action) => {
+  state.loading = false;
+  state.error = action.payload;
+});
   },
 });
 
