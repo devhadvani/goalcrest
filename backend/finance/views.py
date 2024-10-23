@@ -14,6 +14,7 @@ from rest_framework import generics
 from .models import Income, Expense, Category, Budget, Transaction
 from .serializers import IncomeSerializer, ExpenseSerializer, CategorySerializer, BudgetSerializer, TransactionSerializer
 from rest_framework.permissions import IsAuthenticated
+from django.utils.dateparse import parse_date
 
 class IncomeListCreateAPIView(generics.ListCreateAPIView):
     queryset = Income.objects.all()
@@ -21,13 +22,25 @@ class IncomeListCreateAPIView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # Filter income entries for the logged-in user
-        return Income.objects.filter(user=self.request.user)
+        # Get the logged-in user
+        user = self.request.user
+
+        # Fetch query params (e.g., date=2023-10-14)
+        date_param = self.request.query_params.get('date', None)
+        
+        # Filter by user and optionally by date
+        queryset = Income.objects.filter(user=user)
+        if date_param:
+            date = parse_date(date_param)
+            if date:
+                queryset = queryset.filter(date=date)
+        
+        return queryset
 
     def perform_create(self, serializer):
         # Assign the current logged-in user to the income
-        print("ser",self.request.user)
         serializer.save(user=self.request.user)
+
 
 class IncomeDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Income.objects.all()
@@ -44,8 +57,20 @@ class ExpenseListCreateAPIView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # Filter expense entries for the logged-in user
-        return Expense.objects.filter(user=self.request.user)
+        # Get the logged-in user
+        user = self.request.user
+
+        # Fetch query params (e.g., date=2023-10-14)
+        date_param = self.request.query_params.get('date', None)
+        
+        # Filter by user and optionally by date
+        queryset = Expense.objects.filter(user=user)
+        if date_param:
+            date = parse_date(date_param)
+            if date:
+                queryset = queryset.filter(date=date)
+        
+        return queryset
 
     def perform_create(self, serializer):
         # Assign the current logged-in user to the expense
