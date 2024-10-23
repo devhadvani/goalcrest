@@ -11,7 +11,7 @@ const AddIncome = () => {
   const [isRecurring, setIsRecurring] = useState(false);
   const [recurrenceInterval, setRecurrenceInterval] = useState('');
   const dispatch = useDispatch();
-  const { categories, loading, error } = useSelector((state) => state.finance);
+  const { categories = [], loading } = useSelector((state) => state.finance);
 
 
   // Fetch categories from the API
@@ -60,26 +60,25 @@ const AddIncome = () => {
             placeholder="Optional description"
           />
         </div>
-        <div className="form-group">
-          <label htmlFor="category">Category:</label>
-          <select
-            id="category"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            required
-          >
-            <option value="">Select category</option>
-            {loading ? (
-              <option>Loading...</option>
-            ) : (
-              categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.name}
-                </option>
-              ))
-            )}
-          </select>
-        </div>
+
+
+  {/* Category dropdown */}
+      <label htmlFor="category">Category</label>
+      <select
+        id="category"
+        value={category}
+        onChange={(e) => setCategory(e.target.value)}
+        disabled={loading} // Disable dropdown while loading
+      >
+        <option value="">Select Category</option>
+        {/* Fallback to [] prevents error on categories.map */}
+        {categories.map((category) => (
+          <option key={category.id} value={category.id}>
+            {category.name}
+          </option>
+        ))}
+      </select>
+      <br />
 
         <div className="form-group">
           <label htmlFor="date">Date</label>
