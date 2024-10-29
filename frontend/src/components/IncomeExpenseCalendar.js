@@ -54,9 +54,10 @@ const IncomeExpenseCalendar = () => {
     
     const formattedDate = formatDate(date);
     await Promise.all([
-      dispatch(fetchIncomesByDate(formattedDate)),
-      dispatch(fetchExpensesByDate(formattedDate))
+     dispatch(fetchIncomesByDate(formattedDate)),
+     dispatch(fetchExpensesByDate(formattedDate))
     ]);
+    console.log("Expense item:", selectedDateExpenses);
   };
 
   const checkIfIncome = (date) => {
@@ -127,7 +128,7 @@ const IncomeExpenseCalendar = () => {
                           <li key={income.id} className="record-card income">
                             <div className="record-amount">₹{Number(income.amount).toLocaleString()}</div>
                             <div className="record-details">
-                              <span className="record-category">{income.category}</span>
+                              <span className="record-category">{income.category_name}</span>
                               {income.description && (
                                 <span className="record-description">{income.description}</span>
                               )}
@@ -142,13 +143,16 @@ const IncomeExpenseCalendar = () => {
 
                   <div className="records-section expense-section">
                     <h3>Expense Records</h3>
+                    
                     {selectedDateExpenses.length > 0 ? (
                       <ul className="records-list">
+                   
                         {selectedDateExpenses.map((expense) => (
+                           
                           <li key={expense.id} className="record-card expense">
                             <div className="record-amount">-₹{Number(expense.amount).toLocaleString()}</div>
                             <div className="record-details">
-                              <span className="record-category">{expense.category}</span>
+                              <span className="record-category">{expense.category_name}</span>
                               {expense.description && (
                                 <span className="record-description">{expense.description}</span>
                               )}

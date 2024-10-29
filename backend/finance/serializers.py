@@ -10,19 +10,32 @@ class CreateUserSerializer(UserCreateSerializer):
         model = User
         fields = ['id', 'first_name', 'last_name', 'email', 'google_id', 'profile_picture']
 
-
 class IncomeSerializer(serializers.ModelSerializer):
+    category_name = serializers.SerializerMethodField()
+
     class Meta:
         model = Income
-        fields = ['id', 'user', 'amount', 'description', 'date', 'category', 'is_recurring', 'recurrence_interval', 'next_occurrence', 'created_at', 'updated_at']
-        read_only_fields = ['id', 'user','created_at', 'updated_at', 'next_occurrence']
+        fields = ['id', 'user', 'amount', 'description', 'date', 'category', 'category_name', 
+                  'is_recurring', 'recurrence_interval', 'next_occurrence', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'user', 'created_at', 'updated_at', 'next_occurrence']
+
+    def get_category_name(self, obj):
+        # Fetching the category name using the related category ID
+        return obj.category.name if obj.category else None
+
 
 class ExpenseSerializer(serializers.ModelSerializer):
+    category_name = serializers.SerializerMethodField()
+
     class Meta:
         model = Expense
-        fields = ['id', 'user', 'amount', 'description', 'date', 'category', 'is_recurring', 'recurrence_interval', 'next_occurrence', 'created_at', 'updated_at']
-        read_only_fields = ['id','user', 'created_at', 'updated_at', 'next_occurrence']
+        fields = ['id', 'user', 'amount', 'description', 'date', 'category', 'category_name', 
+                  'is_recurring', 'recurrence_interval', 'next_occurrence', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'user', 'created_at', 'updated_at', 'next_occurrence']
 
+    def get_category_name(self, obj):
+        # Fetching the category name using the related category ID
+        return obj.category.name if obj.category else None
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
