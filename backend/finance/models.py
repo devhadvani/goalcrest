@@ -8,6 +8,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.utils import timezone
 from datetime import timedelta
+from dateutil.relativedelta import relativedelta
 
 # Create your models here.
 
@@ -134,13 +135,13 @@ class Income(models.Model):
         # Automatically set the next occurrence for recurring income
         if self.is_recurring and not self.next_occurrence:
             if self.recurrence_interval == 'monthly':
-                self.next_occurrence = self.date + timedelta(days=30)
+                self.next_occurrence = self.date + relativedelta(months=1)
             elif self.recurrence_interval == 'yearly':
-                self.next_occurrence = self.date + timedelta(days=365)
+                self.next_occurrence = self.date + relativedelta(years=1)
         super(Income, self).save(*args, **kwargs)
-
+        
     def __str__(self):
-        return f"Income {self.amount} - {self.user.username}"
+        return f"Expense {self.amount} - {self.user} - at {self.date}"
 
 class Expense(models.Model):
     """Model to track expenses with category, recurrence, and customization"""
@@ -156,18 +157,16 @@ class Expense(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
-        # Automatically set the next occurrence for recurring expenses
+        # Automatically set the next occurrence for recurring income
         if self.is_recurring and not self.next_occurrence:
-            if self.recurrence_interval == 'weekly':
-                self.next_occurrence = self.date + timedelta(days=7)
-            elif self.recurrence_interval == 'monthly':
-                self.next_occurrence = self.date + timedelta(days=30)
+            if self.recurrence_interval == 'monthly':
+                self.next_occurrence = self.date + relativedelta(months=1)
             elif self.recurrence_interval == 'yearly':
-                self.next_occurrence = self.date + timedelta(days=365)
+                self.next_occurrence = self.date + relativedelta(years=1)
         super(Expense, self).save(*args, **kwargs)
-
+        
     def __str__(self):
-        return f"Expense {self.amount} - {self.user.username}"
+        return f"Expense {self.amount} - {self.user} - at {date}"
 
 class Budget(models.Model):
     """Model for users to define budgets for their income and expenses"""

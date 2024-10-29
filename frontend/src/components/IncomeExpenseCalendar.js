@@ -84,92 +84,110 @@ const IncomeExpenseCalendar = () => {
   return (
     <div className="calendar-container">
       <h1>Income & Expense Calendar</h1>
+
       <Calendar
         onClickDay={handleDayClick}
         tileContent={tileContent}
         value={selectedDate}
       />
-
       {showModal && (
-        <div className="modal">
+        <div className="modal-overlay">
           <div className="modal-content">
-            <h2>Records for {selectedDate.toDateString()}</h2>
+            <div className="modal-header">
+              <h2>{selectedDate.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+              })}</h2>
+              <button 
+                className="close-button"
+                onClick={() => {
+                  setShowModal(false);
+                  setShowAddForm(false);
+                }}
+              >
+                ×
+              </button>
+            </div>
             
             {loading ? (
-              <div className="loading">Loading records...</div>
+              <div className="loading">
+                <div className="loading-spinner"></div>
+                <p>Loading records...</p>
+              </div>
             ) : (
-              <>
-                <div className="records-section">
-                  <h3>Incomes</h3>
-                  {selectedDateIncomes.length > 0 ? (
-                    <ul className="records-list">
-                      {selectedDateIncomes.map((income) => (
-                        <li key={income.id} className="record-item">
-                          <span className="amount">${Number(income.amount).toFixed(2)}</span>
-                          <span className="category">{income.category}</span>
-                          {income.description && (
-                            <span className="description">{income.description}</span>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p>No incomes for this date</p>
-                  )}
+              <div className="modal-body">
+                <div className="records-grid">
+                  <div className="records-section income-section">
+                    <h3>Income Records</h3>
+                    {selectedDateIncomes.length > 0 ? (
+                      <ul className="records-list">
+                        {selectedDateIncomes.map((income) => (
+                          <li key={income.id} className="record-card income">
+                            <div className="record-amount">₹{Number(income.amount).toLocaleString()}</div>
+                            <div className="record-details">
+                              <span className="record-category">{income.category}</span>
+                              {income.description && (
+                                <span className="record-description">{income.description}</span>
+                              )}
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="no-records">No income records for this date</p>
+                    )}
+                  </div>
+
+                  <div className="records-section expense-section">
+                    <h3>Expense Records</h3>
+                    {selectedDateExpenses.length > 0 ? (
+                      <ul className="records-list">
+                        {selectedDateExpenses.map((expense) => (
+                          <li key={expense.id} className="record-card expense">
+                            <div className="record-amount">-₹{Number(expense.amount).toLocaleString()}</div>
+                            <div className="record-details">
+                              <span className="record-category">{expense.category}</span>
+                              {expense.description && (
+                                <span className="record-description">{expense.description}</span>
+                              )}
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="no-records">No expense records for this date</p>
+                    )}
+                  </div>
                 </div>
 
-                <div className="records-section">
-                  <h3>Expenses</h3>
-                  {selectedDateExpenses.length > 0 ? (
-                    <ul className="records-list">
-                      {selectedDateExpenses.map((expense) => (
-                        <li key={expense.id} className="record-item">
-                          <span className="amount">-${Number(expense.amount).toFixed(2)}</span>
-                          <span className="category">{expense.category}</span>
-                          {expense.description && (
-                            <span className="description">{expense.description}</span>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p>No expenses for this date</p>
-                  )}
-                </div>
-
-                <div className="actions">
+                <div className="modal-actions">
                   {!showAddForm ? (
-                    <div className="button-group">
+                    <div className="action-buttons">
                       <button 
                         onClick={() => {
                           setIsAddingIncome(true);
                           setShowAddForm(true);
                         }}
-                        className="action-button income"
+                        className="action-button add-income"
                       >
-                        Add Income
+                        + Add Income
                       </button>
                       <button 
                         onClick={() => {
                           setIsAddingIncome(false);
                           setShowAddForm(true);
                         }}
-                        className="action-button expense"
+                        className="action-button add-expense"
                       >
-                        Add Expense
+                        + Add Expense
                       </button>
                     </div>
                   ) : (
-                    <div className="add-form-container">
+                    <div className="add-form">
                       {isAddingIncome ? (
-                        <AddIncome 
-                        //   initialDate={formatDate(selectedDate)}
-                        //   onSuccess={() => {
-                        //     setShowAddForm(false);
-                        //     handleDayClick(selectedDate);
-                        //   }}
-                        //   onCancel={() => setShowAddForm(false)}
-                        />
+                        <AddIncome />
                       ) : (
                         <AddExpense 
                           initialDate={formatDate(selectedDate)}
@@ -183,28 +201,104 @@ const IncomeExpenseCalendar = () => {
                     </div>
                   )}
                 </div>
-              </>
+              </div>
             )}
-            
-            <button 
-              className="close-button"
-              onClick={() => {
-                setShowModal(false);
-                setShowAddForm(false);
-              }}
-            >
-              Close
-            </button>
           </div>
         </div>
       )}
 
+
       <style jsx>{`
-        .calendar-container {
-          padding: 20px;
-          max-width: 800px;
-          margin: 0 auto;
-        }
+     
+  .calendar-container {
+  max-width: 1200px;
+  margin: auto;
+  margin-top:20px;
+  padding: 20px;
+  // background-color: #f8fafc;
+  border-radius: 12px;
+  // height : 800px;
+  box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Customizing the main calendar */
+.react-calendar {
+  width: 1220px;
+  // height : 800px;
+  border : none;
+  font-family: Arial, sans-serif;
+  font-size: 20px;
+}
+
+.react-calendar__tile {
+  border-radius: 8px;
+  background-color: #f8fafc;
+  padding: 10px;
+    height : 100px;
+}
+
+.react-calendar__tile--now {
+  background-color: #e0f7fa !important;
+  color: #00796b;
+
+}
+
+.react-calendar__tile--active {
+  background-color: #c7faff !important;
+  color: #000;
+  border-radius:10%;
+}
+
+.react-calendar__tile:hover {
+  background-color: #a7e5ff; /* Custom hover background color */
+  color: #005f73; 
+
+}
+
+.react-calendar__tile--active:hover {
+  background-color: #a7e5ff !important; /* Custom hover background color */
+  color: #005f73 !important;
+}
+
+
+
+.react-calendar__navigation button {
+  background: #010101;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 15px;
+  font-size: 16px;
+  cursor: pointer;
+  margin: 0 10px;
+  transition: background-color 0.3s;
+}
+
+.react-calendar__navigation button:disabled {
+  background: #ccc;
+  color: #888;
+  cursor: default;
+}
+
+.react-calendar__navigation button:hover:not(:disabled) {
+  background-color: #004d40;
+}
+
+/* Header styling */
+.react-calendar__month-view__weekdays {
+  font-weight: bold;
+  color: #37474f;
+  text-transform: uppercase;
+  font-size: 16px;
+}
+
+.react-calendar__month-view__weekdays__weekday {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 0;
+}
+
         .dot-container {
           display: flex;
           gap: 2px;
@@ -308,6 +402,176 @@ const IncomeExpenseCalendar = () => {
           padding: 20px;
           background-color: #f5f5f5;
           border-radius: 4px;
+        }
+
+
+
+
+                .modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: rgba(0, 0, 0, 0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+        }
+
+        .modal-content {
+          background: white;
+          border-radius: 20px;
+          width: 90%;
+          max-width: 1100px;
+          max-height: 90vh;
+          overflow-y: auto;
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+          padding: 1.5rem;
+          border-bottom: 1px solid #e2e8f0;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          position: sticky;
+          top: 0;
+          background: white;
+          z-index: 1;
+        }
+
+        .modal-header h2 {
+          margin: 0;
+          color: #2d3748;
+          font-size: 1.5rem;
+        }
+
+        .close-button {
+          background: none;
+          border: none;
+          font-size: 2rem;
+          color: #a0aec0;
+          cursor: pointer;
+          padding: 0;
+          line-height: 1;
+        }
+
+        .modal-body {
+          padding: 1.5rem;
+        }
+
+        .records-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+          gap: 2rem;
+          margin-bottom: 2rem;
+        }
+
+        .records-section {
+          background: #f7fafc;
+          border-radius: 12px;
+          padding: 1.5rem;
+        }
+
+        .records-section h3 {
+          margin: 0 0 1rem;
+          color: #2d3748;
+          font-size: 1.25rem;
+        }
+
+        .records-list {
+          list-style: none;
+          padding: 0;
+          margin: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+        }
+
+        .record-card {
+          background: white;
+          border-radius: 8px;
+          padding: 1rem;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .record-card.income {
+          border-left: 4px solid #48bb78;
+        }
+
+        .record-card.expense {
+          border-left: 4px solid #f56565;
+        }
+
+        .record-amount {
+          font-size: 1.25rem;
+          font-weight: bold;
+        }
+
+        .income .record-amount {
+          color: #48bb78;
+        }
+
+        .expense .record-amount {
+          color: #f56565;
+        }
+
+        .record-details {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+        }
+
+        .record-category {
+          font-weight: 500;
+          color: #4a5568;
+        }
+
+        .record-description {
+          font-size: 0.875rem;
+          color: #718096;
+        }
+
+        .no-records {
+          color: #a0aec0;
+          text-align: center;
+          padding: 2rem;
+        }
+
+        .modal-actions {
+          margin-top: 2rem;
+          padding-top: 1.5rem;
+          border-top: 1px solid #e2e8f0;
+        }
+
+        .action-buttons {
+          display: flex;
+          gap: 1rem;
+          justify-content: center;
+        }
+
+        .action-button {
+          padding: 0.75rem 1.5rem;
+          border: none;
+          border-radius: 8px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .action-button:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .add-income {
+          background: #48bb78;
+          color: white;
         }
       `}</style>
     </div>

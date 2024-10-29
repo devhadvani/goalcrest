@@ -14,7 +14,6 @@ const AddIncome = () => {
   const { categories = [], loading } = useSelector((state) => state.finance);
 
 
-  // Fetch categories from the API
   useEffect(() => {
     if (categories.length === 0) {
       dispatch(fetchCategories());
