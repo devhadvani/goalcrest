@@ -39,6 +39,13 @@ const IncomeExpenseCalendar = () => {
     return `${year}-${month}-${day}`;
   };
 
+  const formatMonthKey = (date) => {
+    const year = new Date(date).getFullYear();
+    const month = String(new Date(date).getMonth() + 1).padStart(2, '0');
+    return `${year}-${month}`;
+  };
+
+
   // Memoized date maps for better performance
   const incomeDates = useMemo(() => {
     return new Set(incomes.map(income => new Date(income.date).toDateString()));
@@ -68,7 +75,40 @@ const IncomeExpenseCalendar = () => {
     return expenseDates.has(date.toDateString());
   };
 
+  const monthlyTotals = useMemo(() => {
+    const totals = {};
+    
+    incomes.forEach(income => {
+      const monthKey = formatMonthKey(income.date);
+      if (!totals[monthKey]) totals[monthKey] = { income: 0, expense: 0 };
+      totals[monthKey].income += Number(income.amount);
+    });
+
+    expenses.forEach(expense => {
+      const monthKey = formatMonthKey(expense.date);
+      if (!totals[monthKey]) totals[monthKey] = { income: 0, expense: 0 };
+      totals[monthKey].expense += Number(expense.amount);
+    });
+
+    return totals;
+  }, [incomes, expenses]);
+  // const tileContent = ({ date, view }) => {
+ 
+  // };
+
+
   const tileContent = ({ date, view }) => {
+    if (view === 'year') {
+      const monthKey = formatMonthKey(date);
+      const monthData = monthlyTotals[monthKey] || { income: 0, expense: 0 };
+
+      return (
+        <div className="monthly-totals">
+          <span className="income-total">+₹{monthData.income.toLocaleString()}</span>
+          <span className="expense-total">-₹{monthData.expense.toLocaleString()}</span>
+        </div>
+      );
+    }
     if (view === 'month') {
       const hasIncome = checkIfIncome(date);
       const hasExpense = checkIfExpense(date);
@@ -411,7 +451,7 @@ const IncomeExpenseCalendar = () => {
 
 
 
-                .modal-overlay {
+          .modal-overlay {
           position: fixed;
           top: 0;
           left: 0;
@@ -422,13 +462,14 @@ const IncomeExpenseCalendar = () => {
           align-items: center;
           justify-content: center;
           z-index: 1000;
+          // height: 1000px;
         }
 
         .modal-content {
           background: white;
           border-radius: 20px;
           width: 90%;
-          max-width: 1100px;
+          max-width: 1250px;
           max-height: 90vh;
           overflow-y: auto;
           box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
@@ -577,6 +618,24 @@ const IncomeExpenseCalendar = () => {
           background: #48bb78;
           color: white;
         }
+            .monthly-totals {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          font-size: 1.05rem;
+          margin-top: 4px;
+        }
+
+        .income-total {
+          color: #48bb78;
+          font-weight: 600;
+        }
+
+        .expense-total {
+          color: #f56565;
+          font-weight: 600;
+        }
+
       `}</style>
     </div>
   );
