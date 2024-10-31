@@ -50,6 +50,11 @@ class IncomeDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         # Ensure the user can only access their own income entries
         return Income.objects.filter(user=self.request.user)
+    
+    def perform_update(self, serializer):
+        # Ensure the user is correctly set during update and remains unchanged
+        print("i had been here")
+        serializer.save(user=self.request.user)
 
 class ExpenseListCreateAPIView(generics.ListCreateAPIView):
     queryset = Expense.objects.all()

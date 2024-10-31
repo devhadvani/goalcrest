@@ -1,43 +1,86 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { addIncome,fetchCategories } from '../features/finance/financeSlice';
-import axios from 'axios';
+import { addIncome, updateIncome, fetchCategories } from '../features/finance/financeSlice';
 
-const AddIncome = () => {
+const AddIncome = ({ initialData = null, onSubmit, onCancel }) => {
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
   const [date, setDate] = useState('');
   const [isRecurring, setIsRecurring] = useState(false);
   const [recurrenceInterval, setRecurrenceInterval] = useState('');
+  
   const dispatch = useDispatch();
   const { categories = [], loading } = useSelector((state) => state.finance);
 
+  // Initialize form with data if provided
+  useEffect(() => {
+    if (initialData) {
+      setAmount(initialData.amount.toString());
+      setDescription(initialData.description || '');
+      setCategory(initialData.category_id || initialData.category || '');
+      // Format date to YYYY-MM-DD for input
+      const formattedDate = new Date(initialData.date).toISOString().split('T')[0];
+      setDate(formattedDate);
+      setIsRecurring(initialData.is_recurring || false);
+      setRecurrenceInterval(initialData.recurrence_interval || '');
+    }
+  }, [initialData]);
 
   useEffect(() => {
     if (categories.length === 0) {
       dispatch(fetchCategories());
     }
   }, [dispatch, categories.length]);
-  
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const incomeData = {
-      amount,
+      amount: Number(amount),
       description,
       category,
       date,
       is_recurring: isRecurring,
       recurrence_interval: isRecurring ? recurrenceInterval : null,
     };
-    console.log("income",incomeData);
-    dispatch(addIncome(incomeData));
+    try{
+    if (initialData) {
+      // If we're updating, include the ID
+      const id = initialData.id;
+      console.log("updates",incomeData);
+      // await dispatch(updateIncome(incomeData,id,));
+    } else {
+      // If we're creating a new record
+      await dispatch(addIncome(incomeData));
+    }
+  }
+    catch (error) {
+      console.error("Error occurred:", error);
+  }
+
+    // Call the onSubmit callback if provided
+    if (onSubmit) {
+      onSubmit(incomeData);
+    }
+
+    // Reset form if it's not an update
+    if (!initialData) {
+      resetForm();
+    }
+  };
+
+  const resetForm = () => {
+    setAmount('');
+    setDescription('');
+    setCategory('');
+    setDate('');
+    setIsRecurring(false);
+    setRecurrenceInterval('');
   };
 
   return (
     <div className="add-income-container">
-      <h1>Add Income</h1>
+      <h1>{initialData ? 'Update Income' : 'Add Income'}</h1>
       <form onSubmit={handleSubmit} className="add-income-form">
         <div className="form-group">
           <label htmlFor="amount">Amount</label>
@@ -61,6 +104,7 @@ const AddIncome = () => {
             placeholder="Optional description"
           />
         </div>
+
         <div className="form-group">
           <label htmlFor="category">Category:</label>
           <select
@@ -93,14 +137,16 @@ const AddIncome = () => {
           />
         </div>
 
-        <div className="form-group">
-          <label htmlFor="is_recurring">Recurring Income?</label>
-          <input
-            type="checkbox"
-            id="is_recurring"
-            checked={isRecurring}
-            onChange={(e) => setIsRecurring(e.target.checked)}
-          />
+        <div className="form-group checkbox-group">
+          <label htmlFor="is_recurring">
+            <input
+              type="checkbox"
+              id="is_recurring"
+              checked={isRecurring}
+              onChange={(e) => setIsRecurring(e.target.checked)}
+            />
+            Recurring Income?
+          </label>
         </div>
 
         {isRecurring && (
@@ -119,10 +165,22 @@ const AddIncome = () => {
           </div>
         )}
 
-        <button type="submit" className="submit-button">Add Income</button>
+        <div className="button-group">
+          <button type="submit" className="submit-button">
+            {initialData ? 'Update Income' : 'Add Income'}
+          </button>
+          {initialData && (
+            <button 
+              type="button" 
+              className="cancel-button"
+              onClick={onCancel}
+            >
+              Cancel
+            </button>
+          )}
+        </div>
       </form>
 
-      {/* Simple styling */}
       <style jsx>{`
         .add-income-container {
           padding: 20px;
@@ -135,30 +193,64 @@ const AddIncome = () => {
         .add-income-form {
           display: flex;
           flex-direction: column;
+          gap: 15px;
         }
         .form-group {
-          margin-bottom: 15px;
+          display: flex;
+          flex-direction: column;
+          gap: 5px;
+        }
+        .checkbox-group {
+          flex-direction: row;
+          align-items: center;
+          gap: 10px;
+        }
+        .checkbox-group input {
+          width: auto;
+          margin-right: 8px;
         }
         label {
-          margin-bottom: 5px;
-          font-weight: bold;
+          font-weight: 500;
+          color: #333;
         }
         input, select {
           padding: 10px;
           border-radius: 5px;
-          border: 1px solid #ccc;
+          border: 1px solid #ddd;
+          font-size: 14px;
         }
-        .submit-button {
-          padding: 10px;
-          background-color: #007bff;
-          color: white;
-          border: none;
+        input:focus, select:focus {
+          outline: none;
+          border-color: #007bff;
+          box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+        }
+        .button-group {
+          display: flex;
+          gap: 10px;
+          margin-top: 10px;
+        }
+        .submit-button, .cancel-button {
+          padding: 10px 20px;
           border-radius: 5px;
           cursor: pointer;
           font-size: 16px;
+          border: none;
+          flex: 1;
+          transition: background-color 0.2s;
+        }
+        .submit-button {
+          background-color: #007bff;
+          color: white;
         }
         .submit-button:hover {
           background-color: #0056b3;
+        }
+        .cancel-button {
+          background-color: #6c757d;
+          color: white;
+        }
+        .cancel-button:hover {
+          background-color: #5a6268;
         }
       `}</style>
     </div>

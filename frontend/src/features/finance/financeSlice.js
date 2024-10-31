@@ -127,6 +127,76 @@ export const fetchExpensesByDate = createAsyncThunk('finance/fetchExpensesByDate
   }
 });
 
+export const updateIncome = createAsyncThunk('finance/updateIncome', async ({ id,updatedData }, thunkAPI) => {
+  try {
+    const state = thunkAPI.getState();
+    const accessToken = state.auth.accessToken;
+    console.log("in the thunk",updatedData);
+    console.log("in the thunk for the id",id);
+
+    const response = await axios.put(`${API_URL}/incomes/${id}/`, updatedData, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    return thunkAPI.rejectWithValue(error.response.data);
+  }
+});
+
+// Async thunk for deleting income
+export const deleteIncome = createAsyncThunk('finance/deleteIncome', async (id, thunkAPI) => {
+  try {
+    const state = thunkAPI.getState();
+    const accessToken = state.auth.accessToken;
+
+    await axios.delete(`${API_URL}/incomes/${id}/`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    return id;
+  } catch (error) {
+    return thunkAPI.rejectWithValue(error.response.data);
+  }
+});
+
+// Async thunk for updating expense
+export const updateExpense = createAsyncThunk('finance/updateExpense', async ({ id, expenseData }, thunkAPI) => {
+  try {
+    const state = thunkAPI.getState();
+    const accessToken = state.auth.accessToken;
+
+    const response = await axios.put(`${API_URL}/expenses/${id}/`, expenseData, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    console.log("dsfkjhfkgs",response)
+    return response.data;
+  } catch (error) {
+    return thunkAPI.rejectWithValue(error.response.data);
+  }
+});
+
+// Async thunk for deleting expense
+export const deleteExpense = createAsyncThunk('finance/deleteExpense', async (id, thunkAPI) => {
+  try {
+    const state = thunkAPI.getState();
+    const accessToken = state.auth.accessToken;
+
+    await axios.delete(`${API_URL}/expenses/${id}/`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    return id;
+  } catch (error) {
+    return thunkAPI.rejectWithValue(error.response.data);
+  }
+});
+
 
 // Finance slice
 const financeSlice = createSlice({
