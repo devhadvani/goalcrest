@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "corsheaders",
+    "celery",
     "rest_framework",
     "rest_framework_simplejwt",
     "djoser",
@@ -197,3 +198,7 @@ DJOSER = {
         "user_delete": "djoser.serializers.UserDeleteSerializer",
     },
 }
+
+# settings.py
+CELERY_BROKER_URL = "redis://redis:6379/0"  # Redis broker
+CELERY_RESULT_BACKEND = "redis://redis:6379/0"

@@ -135,3 +135,12 @@ class TransactionListCreateAPIView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         # Assign the current logged-in user to the transaction
         serializer.save(user=self.request.user)
+
+
+
+from django.http import JsonResponse
+from .tasks import add
+
+def test_task_view(request):
+    result = add.delay(4, 6)
+    return JsonResponse({"task_id": result.id})

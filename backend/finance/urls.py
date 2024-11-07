@@ -1,6 +1,7 @@
 from django.urls import path, include
 from .views import (
     home,
+    test_task_view,
     IncomeListCreateAPIView,
     IncomeDetailAPIView,
     ExpenseListCreateAPIView,
@@ -15,6 +16,7 @@ urlpatterns = [
     path("auth/", include("djoser.urls.authtoken")),
     path("auth/", include("djoser.urls.jwt")),
     path("", home),
+    path("test-task/", test_task_view, name="test_task"),
     path("incomes/", IncomeListCreateAPIView.as_view(), name="income-list-create"),
     path("incomes/<int:pk>/", IncomeDetailAPIView.as_view(), name="income-detail"),
     path("expenses/", ExpenseListCreateAPIView.as_view(), name="expense-list-create"),

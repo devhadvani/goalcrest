@@ -17,6 +17,7 @@ services:
       - DJANGO_SECRET_KEY=your_secret_key
     depends_on:
       - db
+      - redis
     env_file:
       - .env
 
@@ -43,6 +44,44 @@ services:
       - POSTGRES_DB=goalcrest_db
     ports:
       - "5433:5432"
+
+  redis:
+    image: redis:alpine
+    container_name: goalcrest_redis
+    ports:
+      - "6378:6379"
+
+  celery:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend  # Same Dockerfile as the Django backend
+    container_name: goalcrest_celery
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0 
+    command: celery -A goalcrest worker --loglevel=info
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - redis
+      - db
+    env_file:
+      - .env
+
+  celery-beat:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend  # Same Dockerfile as the Django backend
+    container_name: goalcrest_celery_beat
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0 
+    command: celery -A goalcrest beat --loglevel=info
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - redis
+      - db
+    env_file:
+      - .env
 
 volumes:
   db_data:
