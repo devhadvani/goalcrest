@@ -155,12 +155,12 @@ DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
 EMAIL_HOST = os.getenv("EMAIL_HOST")
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
-EMAIL_PORT = int(os.getenv("EMAIL_PORT", 587))  # Default to 587 if not set
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))  # Default to 587 if not set
 EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS") == "True"  # Convert to boolean
 
 ACCOUNT_EMAIL_VERIFICATION = os.getenv("ACCOUNT_EMAIL_VERIFICATION", "mandatory")
 ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = int(
-    os.getenv("ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS", 1)
+    os.getenv("ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS", "1")
 )
 
 

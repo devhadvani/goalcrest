@@ -1,81 +1,66 @@
+"""this is models file"""
 from django.db import models
 from django.contrib.auth.base_user import BaseUserManager
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
-from django.contrib.auth import get_user_model
-from django.contrib.auth.models import User
 from django.utils import timezone
-from datetime import timedelta
 from dateutil.relativedelta import relativedelta
 
-# Create your models here.
-
-
 class CustomUserManager(BaseUserManager):
+    """Manager for custom user creation with email validation."""
 
     def email_validator(self, email):
+        """email validator"""
         try:
             validate_email(email)
-        except ValidationError:
-            raise ValueError(_("You must provide a valid email"))
+        except ValidationError as exc:
+            raise ValueError(_("You must provide a valid email")) from exc
 
     def create_user(self, first_name, last_name, email, password, **extra_fields):
-
+        """Creates a regular user with provided details."""
         if not first_name:
             raise ValueError(_("Users must submit a first name"))
-
         if not last_name:
             raise ValueError(_("Users must submit a last name"))
-
         if email:
             email = self.normalize_email(email)
             self.email_validator(email)
         else:
-            raise ValueError(_("Base User: and email address is required"))
+            raise ValueError(_("Base User: an email address is required"))
 
-        user = self.model(
-            first_name=first_name, last_name=last_name, email=email, **extra_fields
-        )
-
+        user = self.model(first_name=first_name, last_name=last_name, email=email, **extra_fields)
         user.set_password(password)
         extra_fields.setdefault("is_staff", False)
         extra_fields.setdefault("is_superuser", False)
-
         user.save()
-
         return user
 
     def create_superuser(self, first_name, last_name, email, password, **extra_fields):
-
+        """Creates a superuser with all permissions."""
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("is_active", True)
 
         if extra_fields.get("is_superuser") is not True:
             raise ValueError(_("Superusers must have is_superuser=True"))
-
         if extra_fields.get("is_staff") is not True:
             raise ValueError(_("Superusers must have is_staff=True"))
-
-        if not password:
-            raise ValueError(_("Superusers must have a password"))
 
         if email:
             email = self.normalize_email(email)
             self.email_validator(email)
         else:
-            raise ValueError(_("Admin User: and email address is required"))
+            raise ValueError(_("Admin User: an email address is required"))
 
         user = self.create_user(first_name, last_name, email, password, **extra_fields)
-
         user.save()
-
         return user
 
 
 class User(AbstractBaseUser, PermissionsMixin):
+    """Custom user model extending AbstractBaseUser."""
     first_name = models.CharField(_("First Name"), max_length=100)
     last_name = models.CharField(_("Last Name"), max_length=100)
     email = models.EmailField(_("Email Address"), max_length=254, unique=True)
@@ -89,10 +74,6 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     objects = CustomUserManager()
 
-    class Meta:
-        verbose_name = _("User")
-        verbose_name_plural = _("Users")
-
     def __str__(self):
         return self.email
 
@@ -101,13 +82,11 @@ class User(AbstractBaseUser, PermissionsMixin):
         return f"{self.first_name} {self.last_name}"
 
 
-class Category(models.Model):
-    """Model to define different categories for income and expenses"""
 
-    CATEGORY_TYPES = (
-        ("income", "Income"),
-        ("expense", "Expense"),
-    )
+
+class Category(models.Model):
+    """Defines income and expense categories."""
+    CATEGORY_TYPES = (("income", "Income"), ("expense", "Expense"))
     name = models.CharField(max_length=100)
     type = models.CharField(max_length=10, choices=CATEGORY_TYPES)
 
@@ -116,82 +95,72 @@ class Category(models.Model):
 
 
 class Income(models.Model):
-    """Model to track income with support for fixed and variable income"""
-
+    """Tracks user income with recurrence options."""
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     description = models.CharField(max_length=255, blank=True, null=True)
     date = models.DateField(default=timezone.now)
     category = models.ForeignKey(
-        Category,
-        on_delete=models.SET_NULL,
-        null=True,
-        limit_choices_to={"type": "income"},
+        Category, on_delete=models.SET_NULL, null=True, limit_choices_to={"type": "income"}
     )
     is_recurring = models.BooleanField(default=False)
     recurrence_interval = models.CharField(
-        max_length=20,
-        choices=[("monthly", "Monthly"), ("yearly", "Yearly")],
-        blank=True,
-        null=True,
+        max_length=20, choices=[("monthly", "Monthly"), ("yearly", "Yearly")], blank=True, null=True
     )
     next_occurrence = models.DateField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
-        # Automatically set the next occurrence for recurring income
         if self.is_recurring and not self.next_occurrence:
             if self.recurrence_interval == "monthly":
                 self.next_occurrence = self.date + relativedelta(months=1)
             elif self.recurrence_interval == "yearly":
                 self.next_occurrence = self.date + relativedelta(years=1)
-        super(Income, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"Expense {self.amount} - {self.user} - at {self.date}"
+        return f"Income {self.amount} - {self.user} - on {self.date}"
 
 
 class Expense(models.Model):
-    """Model to track expenses with category, recurrence, and customization"""
-
+    """Tracks user expenses with recurrence options."""
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     description = models.CharField(max_length=255, blank=True, null=True)
     date = models.DateField(default=timezone.now)
     category = models.ForeignKey(
-        Category,
-        on_delete=models.SET_NULL,
-        null=True,
-        limit_choices_to={"type": "expense"},
+        Category, on_delete=models.SET_NULL, null=True, limit_choices_to={"type": "expense"}
     )
     is_recurring = models.BooleanField(default=False)
     recurrence_interval = models.CharField(
-        max_length=20,
-        choices=[("weekly", "Weekly"), ("monthly", "Monthly"), ("yearly", "Yearly")],
-        blank=True,
-        null=True,
+        max_length=20, 
+        choices=[("weekly", "Weekly"), 
+        ("monthly", "Monthly"), 
+        ("yearly", "Yearly")],
+         blank=True, 
+         null=True
     )
     next_occurrence = models.DateField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
-        # Automatically set the next occurrence for recurring income
         if self.is_recurring and not self.next_occurrence:
-            if self.recurrence_interval == "monthly":
+            if self.recurrence_interval == "weekly":
+                self.next_occurrence = self.date + relativedelta(weeks=1)
+            elif self.recurrence_interval == "monthly":
                 self.next_occurrence = self.date + relativedelta(months=1)
             elif self.recurrence_interval == "yearly":
                 self.next_occurrence = self.date + relativedelta(years=1)
-        super(Expense, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"Expense {self.amount} - {self.user} - at {date}"
+        return f"Expense {self.amount} - {self.user} - on {self.date}"
 
 
 class Budget(models.Model):
-    """Model for users to define budgets for their income and expenses"""
-
+    """User-defined budgets for categories."""
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
@@ -199,16 +168,12 @@ class Budget(models.Model):
     date_to = models.DateField()
 
     def __str__(self):
-        return f"Budget for {self.category.name} - {self.user.username}"
+        return f"Budget for {self.category.name} - {self.user}"
 
 
 class Transaction(models.Model):
-    """Model to log each transaction, both income and expense"""
-
-    TRANSACTION_TYPES = (
-        ("income", "Income"),
-        ("expense", "Expense"),
-    )
+    """Logs each income or expense transaction."""
+    TRANSACTION_TYPES = (("income", "Income"), ("expense", "Expense"))
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     transaction_type = models.CharField(max_length=10, choices=TRANSACTION_TYPES)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
@@ -219,28 +184,15 @@ class Transaction(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return (
-            f"{self.transaction_type.capitalize()} {self.amount} - {self.user.username}"
-        )
+        return f"{self.transaction_type.capitalize()} {self.amount} - {self.user}"
 
 
-class RecurringIncome(models.Model):
-    """Model to keep track of recurring income separately (for historical purposes)"""
-
-    income = models.ForeignKey(Income, on_delete=models.CASCADE)
+class RecurringTransaction(models.Model):
+    """Tracks individual recurring transactions instances for record-keeping."""
+    income = models.ForeignKey(Income, on_delete=models.CASCADE, null=True, blank=True)
+    expense = models.ForeignKey(Expense, on_delete=models.CASCADE, null=True, blank=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     date = models.DateField()
 
     def __str__(self):
-        return f"Recurring Income - {self.amount} on {self.date}"
-
-
-class RecurringExpense(models.Model):
-    """Model to keep track of recurring expenses separately"""
-
-    expense = models.ForeignKey(Expense, on_delete=models.CASCADE)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    date = models.DateField()
-
-    def __str__(self):
-        return f"Recurring Expense - {self.amount} on {self.date}"
+        return f"Recurring {'Income' if self.income else 'Expense'} - {self.amount} on {self.date}"
