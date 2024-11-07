@@ -93,27 +93,36 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
-
 class Income(models.Model):
     """Tracks user income with recurrence options."""
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    description = models.CharField(max_length=255, blank=True, null=True)
+    income_source = models.CharField(max_length=100, blank=True, null=True)  # Income Source
     date = models.DateField(default=timezone.now)
+    is_recurring = models.BooleanField(default=False)
+    recurrence_interval = models.CharField(
+        max_length=20, choices=[("daily", "Daily"), ("weekly", "Weekly"), ("monthly", "Monthly"), ("yearly", "Yearly")],
+        blank=True, null=True
+    )
+    end_date = models.DateField(blank=True, null=True)  # End Date for recurring income
     category = models.ForeignKey(
         Category, on_delete=models.SET_NULL, null=True, limit_choices_to={"type": "income"}
     )
-    is_recurring = models.BooleanField(default=False)
-    recurrence_interval = models.CharField(
-        max_length=20, choices=[("monthly", "Monthly"), ("yearly", "Yearly")], blank=True, null=True
-    )
+    sub_category = models.CharField(max_length=100, blank=True, null=True)  # Sub-Category
+    received_by = models.CharField(max_length=50, blank=True, null=True)  # Received By
+    description = models.TextField(blank=True, null=True)  # Notes
+    attachments = models.FileField(upload_to='income_attachments/', blank=True, null=True)  # Attachments
     next_occurrence = models.DateField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
         if self.is_recurring and not self.next_occurrence:
-            if self.recurrence_interval == "monthly":
+            if self.recurrence_interval == "daily":
+                self.next_occurrence = self.date + relativedelta(days=1)
+            elif self.recurrence_interval == "weekly":
+                self.next_occurrence = self.date + relativedelta(weeks=1)
+            elif self.recurrence_interval == "monthly":
                 self.next_occurrence = self.date + relativedelta(months=1)
             elif self.recurrence_interval == "yearly":
                 self.next_occurrence = self.date + relativedelta(years=1)
@@ -127,27 +136,32 @@ class Expense(models.Model):
     """Tracks user expenses with recurrence options."""
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    description = models.CharField(max_length=255, blank=True, null=True)
+    recipient = models.CharField(max_length=100, blank=True, null=True)  # Recipient / Payee
     date = models.DateField(default=timezone.now)
+    is_recurring = models.BooleanField(default=False)
+    recurrence_interval = models.CharField(
+        max_length=20,
+        choices=[("daily", "Daily"), ("weekly", "Weekly"), ("monthly", "Monthly"), ("yearly", "Yearly")],
+        blank=True, null=True
+    )
+    end_date = models.DateField(blank=True, null=True)  # End Date for recurring expense
     category = models.ForeignKey(
         Category, on_delete=models.SET_NULL, null=True, limit_choices_to={"type": "expense"}
     )
-    is_recurring = models.BooleanField(default=False)
-    recurrence_interval = models.CharField(
-        max_length=20, 
-        choices=[("weekly", "Weekly"), 
-        ("monthly", "Monthly"), 
-        ("yearly", "Yearly")],
-         blank=True, 
-         null=True
-    )
+    sub_category = models.CharField(max_length=100, blank=True, null=True)  # Sub-Category
+    payment_method = models.CharField(max_length=50)  # Payment Method
+    tags = models.CharField(max_length=100, blank=True, null=True)  # Tags
+    description = models.TextField(blank=True, null=True)  # Notes
+    attachments = models.FileField(upload_to='expense_attachments/', blank=True, null=True)  # Attachments
     next_occurrence = models.DateField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
         if self.is_recurring and not self.next_occurrence:
-            if self.recurrence_interval == "weekly":
+            if self.recurrence_interval == "daily":
+                self.next_occurrence = self.date + relativedelta(days=1)
+            elif self.recurrence_interval == "weekly":
                 self.next_occurrence = self.date + relativedelta(weeks=1)
             elif self.recurrence_interval == "monthly":
                 self.next_occurrence = self.date + relativedelta(months=1)
@@ -157,7 +171,6 @@ class Expense(models.Model):
 
     def __str__(self):
         return f"Expense {self.amount} - {self.user} - on {self.date}"
-
 
 class Budget(models.Model):
     """User-defined budgets for categories."""
