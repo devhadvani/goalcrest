@@ -82,16 +82,40 @@ class User(AbstractBaseUser, PermissionsMixin):
         return f"{self.first_name} {self.last_name}"
 
 
+# class Category(models.Model):
+#     """Defines income and expense categories."""
+#     CATEGORY_TYPES = (("income", "Income"), ("expense", "Expense"))
+#     name = models.CharField(max_length=100)
+#     type = models.CharField(max_length=10, choices=CATEGORY_TYPES)
 
+#     def __str__(self):
+#         return self.name
 
 class Category(models.Model):
-    """Defines income and expense categories."""
-    CATEGORY_TYPES = (("income", "Income"), ("expense", "Expense"))
+    """Defines categories for income and expense with classifications for expense categories."""
+    
+    # Define the main type as income or expense
+    CATEGORY_TYPES = [
+        ("income", "Income"),
+        ("expense", "Expense"),
+    ]
+    
+    # Define classifications specifically for expense categories
+    CLASSIFICATION_CHOICES = [
+        ("need", "Need"),
+        ("want", "Want"),
+        ("saving", "Saving"),
+        ("income", "Income"),  # Use this for income categories
+    ]
+    
     name = models.CharField(max_length=100)
-    type = models.CharField(max_length=10, choices=CATEGORY_TYPES)
-
+    type = models.CharField(max_length=80, choices=CATEGORY_TYPES)  # 'income' or 'expense'
+    classification = models.CharField(max_length=80, choices=CLASSIFICATION_CHOICES)  # need, want, saving, income
+    
     def __str__(self):
-        return self.name
+        return f"{self.name} ({self.get_type_display()}) - {self.get_classification_display()}"
+
+
 
 class Income(models.Model):
     """Tracks user income with recurrence options."""

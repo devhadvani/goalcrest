@@ -24,8 +24,8 @@ def debug_task(self):
 
 # Set up the Celery beat schedule
 app.conf.beat_schedule = {
-    'add-recurring-income-every-2-minutes': {
+    'add-recurring-income-daily-midnight': {
         'task': 'finance.tasks.add_recurring_income',
-        'schedule': crontab(minute='*/1'),  # Runs every 2 minutes
+        'schedule': crontab(hour=0, minute=0),  # Runs every day at midnight
     },
 }
