@@ -197,6 +197,9 @@ DJOSER = {
         "user": "finance.serializers.CreateUserSerializer",
         "user_delete": "djoser.serializers.UserDeleteSerializer",
     },
+     'EMAIL': {
+        'activation': 'finance.email.CustomActivationEmail',  # Use your custom email class
+    },
 }
 
 # settings.py

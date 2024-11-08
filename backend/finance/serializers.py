@@ -3,8 +3,8 @@ from django.contrib.auth import get_user_model
 from djoser.serializers import UserCreateSerializer
 from .models import Income, Expense, Category, Budget, Transaction
 
-User = get_user_model()
 
+User = get_user_model()
 
 class CreateUserSerializer(UserCreateSerializer):
     class Meta(UserCreateSerializer.Meta):
@@ -17,6 +17,12 @@ class CreateUserSerializer(UserCreateSerializer):
             "google_id",
             "profile_picture",
         ]
+
+    def perform_create(self, validated_data):
+        user = super().perform_create(validated_data)
+        # Trigger the Celery task to send the registration email in the background
+        send_registration_email.delay(user.id)
+        return user
 
 
 class IncomeSerializer(serializers.ModelSerializer):

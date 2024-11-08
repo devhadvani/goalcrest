@@ -4,6 +4,25 @@ from django.utils import timezone
 from .models import Income
 from dateutil.relativedelta import relativedelta
 import time
+from celery import shared_task
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.conf import settings
+
+@shared_task
+def send_email_async(subject, body, to):
+    email = EmailMultiAlternatives(
+        subject=subject,
+        body=body,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=to,
+    )
+    
+    try:
+        email.send()
+        return f"Email sent successfully to {to}"
+    except Exception as e:
+        return f"Failed to send email: {str(e)}"
 
 @shared_task
 def add_recurring_income():
@@ -38,5 +57,6 @@ def add_recurring_income():
 
 @shared_task
 def add(x, y):
+    print("i am working on this")
     time.sleep(15)
     return x + y
