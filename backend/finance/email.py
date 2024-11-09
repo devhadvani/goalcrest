@@ -12,6 +12,7 @@ class CustomActivationEmail(ActivationEmail):
         to = to or [self.to[0]]
         user = context['user']
         
+        # Generate activation URL
         current_site = get_current_site(self.request)
         protocol = 'https' if self.request.is_secure() else 'http'
         uid = context['uid']
