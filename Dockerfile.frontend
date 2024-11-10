@@ -1,3 +1,25 @@
+# # Dockerfile.frontend
+
+# # Use an official Node.js runtime as a parent image
+# FROM node:18
+
+# # Set the working directory inside the container
+# WORKDIR /app
+
+# # Copy package.json and install dependencies
+# COPY frontend/package.json frontend/package-lock.json ./
+# RUN npm install
+
+# # Copy the rest of the frontend code
+# COPY frontend/ /app
+
+# # Expose the port for the React dev server
+# EXPOSE 3000
+
+# # Start the React development server
+# CMD ["npm", "start"]
+
+
 # Dockerfile.frontend
 
 # Use an official Node.js runtime as a parent image
@@ -7,8 +29,9 @@ FROM node:18
 WORKDIR /app
 
 # Copy package.json and install dependencies
-COPY frontend/package.json frontend/package-lock.json ./
-RUN npm install
+COPY frontend/package*.json ./
+# Increase Node.js memory limit for npm install
+RUN NODE_OPTIONS="--max-old-space-size=2048" npm install
 
 # Copy the rest of the frontend code
 COPY frontend/ /app
