@@ -6,7 +6,10 @@ services:
       context: .
       dockerfile: Dockerfile.backend
     container_name: goalcrest_backend
-    command: python manage.py runserver 0.0.0.0:8000
+    command: >
+      sh -c "python manage.py makemigrations &&
+             python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
     volumes:
       - ./backend:/app
     ports:
@@ -55,7 +58,7 @@ services:
   celery:
     build:
       context: .
-      dockerfile: Dockerfile.backend  # Same Dockerfile as the Django backend
+      dockerfile: Dockerfile.backend  
     container_name: goalcrest_celery
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0 
@@ -71,7 +74,7 @@ services:
   celery-beat:
     build:
       context: .
-      dockerfile: Dockerfile.backend  # Same Dockerfile as the Django backend
+      dockerfile: Dockerfile.backend  
     container_name: goalcrest_celery_beat
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0 

@@ -4,11 +4,11 @@ from .models import User
 # Register your models here.
 admin.site.register(User)
 from django.contrib import admin
-from .models import Income, Expense, Category, Budget, Transaction
+from .models import Income, Expense, Category, Budget, Transaction, Test
 
 # Register the Category model without customization
 admin.site.register(Category)
-
+admin.site.register(Test)
 # Register the Budget model without customization
 admin.site.register(Budget)
 

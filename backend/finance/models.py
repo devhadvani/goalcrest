@@ -233,3 +233,7 @@ class RecurringTransaction(models.Model):
 
     def __str__(self):
         return f"Recurring {'Income' if self.income else 'Expense'} - {self.amount} on {self.date}"
+
+
+class Test(models.Model):
+    description = models.TextField(blank=True, null=True)
