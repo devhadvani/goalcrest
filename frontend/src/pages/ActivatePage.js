@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
 
-const ACTIVATE_URL = 'http://127.0.0.1:8000/auth/users/activation/';
-
+// const ACTIVATE_URL = 'http://127.0.0.1:8000/auth/users/activation/';
+const ACTIVATE_URL = `http://${window.location.hostname}:8000/auth/users/activation`
 const ActivatePage = () => {
     const [activationStatus, setActivationStatus] = useState(null);
     const [error, setError] = useState('');
