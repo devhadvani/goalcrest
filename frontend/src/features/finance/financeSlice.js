@@ -1,8 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-// Base URL for API (adjust based on your backend configuration)
-const API_URL = 'http://localhost:8000';
+// const API_URL = window.location.hostname === 'localhost'
+//   ? 'http://localhost:8000' 
+//   : 'http://ec2-13-60-166-183.eu-north-1.compute.amazonaws.com:8000';
+
+const API_URL = `http://${window.location.hostname}:8000`
 
 // Async thunk for fetching incomes
 export const fetchIncomes = createAsyncThunk('finance/fetchIncomes', async (_, thunkAPI) => {

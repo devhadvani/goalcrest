@@ -1,9 +1,14 @@
-FROM node:18-alpine
+FROM node:18-slim AS build
 
 WORKDIR /app
 
+# Set the Node.js memory limit (e.g., 2 GB)
+ENV NODE_OPTIONS="--max-old-space-size=2048"
+
+# Copy and install dependencies
 COPY frontend/package*.json ./
-RUN npm install --save react react-dom react-scripts
+RUN npm install
+
 
 # Save node_modules to a separate folder temporarily
 RUN cp -r node_modules /node_modules
@@ -15,3 +20,5 @@ RUN chmod +x /entrypoint.sh
 EXPOSE 3000
 
 ENTRYPOINT ["/entrypoint.sh"]
+
+
