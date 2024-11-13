@@ -28,9 +28,11 @@ class CustomActivationEmail(ActivationEmail):
         email_body = f"""
         Hello {user.first_name or 'User'},
 
-        Thank you for registering at GoalCrest! Please activate your account using the link below:
+        Thank you for registering at GoalCrest! Please activate your account using the link below :
 
         {activation_url}
+
+        after activating please login to the web .!
 
         If you did not register, please disregard this email.
 

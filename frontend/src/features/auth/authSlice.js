@@ -11,11 +11,14 @@ import axios from 'axios';
 
 
 const API_URL = `http://${window.location.hostname}:8000`
-// Async thunk for login
+
+
+
+
 export const loginUser = createAsyncThunk('auth/loginUser', async (loginData, thunkAPI) => {
   try {
     const response = await axios.post(`${API_URL}/auth/jwt/create/`, loginData);
-    // Store the access token in localStorage
+
     localStorage.setItem('accessToken', response.data.access);
     return response.data;
   } catch (error) {
