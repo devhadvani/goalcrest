@@ -1,18 +1,6 @@
 import logging
 from django.shortcuts import render
-
 from django.http import HttpResponse
-
-
-logger = logging.getLogger(__name__)
-
-
-def home(request):
-    logger.info("hello")
-    print("hello")
-    return render(request, "about.html")
-
-
 from rest_framework import generics
 from .models import Income, Expense, Category, Budget, Transaction
 from .serializers import (
@@ -24,7 +12,17 @@ from .serializers import (
 )
 from rest_framework.permissions import IsAuthenticated
 from django.utils.dateparse import parse_date
+from .serializers import GPayTransactionUploadSerializer
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.utils import timezone
+logger = logging.getLogger(__name__)
 
+def home(request):
+    logger.info("hello")
+    print("hello")
+    return render(request, "about.html")
 
 class IncomeListCreateAPIView(generics.ListCreateAPIView):
     queryset = Income.objects.all()
@@ -144,3 +142,112 @@ from .tasks import add
 def test_task_view(request):
     result = add.delay(4, 6)
     return JsonResponse({"task_id": result.id})
+
+from bs4 import BeautifulSoup
+from datetime import datetime
+from .models import Income, Expense
+from django.utils import timezone
+import re
+
+
+def parse_gpay_html(file_content, start_date, end_date, user):
+    MAX_LENGTH = 100  
+    start_date = datetime.combine(start_date, datetime.min.time())
+    end_date = datetime.combine(end_date, datetime.max.time())
+
+    soup = BeautifulSoup(file_content, 'lxml')
+    transactions = soup.find_all("div", class_="outer-cell mdl-cell mdl-cell--12-col mdl-shadow--2dp")
+    date_pattern = re.compile(r'\d{1,2} \w{3,4} \d{4}, \d{2}:\d{2}:\d{2}')
+    amount_pattern = re.compile(r'₹([\d,]+(\.\d{1,2})?)')
+
+    for transaction in transactions:
+        transaction_info = transaction.find("div", class_="content-cell mdl-cell mdl-cell--6-col mdl-typography--body-1")
+        
+        if transaction_info:
+            details = transaction_info.text.strip()
+            date_match = date_pattern.search(details)
+            if date_match:
+                date_text = date_match.group(0)
+                date_text = date_text.replace("Sept", "Sep")
+                try:
+                    transaction_date = datetime.strptime(date_text, '%d %b %Y, %H:%M:%S')
+                    print("td",transaction_date)
+                    if not (start_date <= transaction_date <= end_date):
+                        continue
+
+                    # Determine transaction type
+                    if "Received" in details:
+                        transaction_type = "income"
+                    elif "Paid" in details or "Sent" in details:
+                        transaction_type = "expense"
+                    else:
+                        transaction_type = "unknown"
+
+                    # Extract amount
+                    amount_match = amount_pattern.search(details)
+                    amount = float(amount_match.group(1).replace(',', '')) if amount_match else 0.0   
+
+                    # Extract recipient or source
+                    if transaction_type == "income":
+                        recipient = "Received from"
+                    elif "to" in details:
+                        recipient = details.split(' to ')[1].split('\n')[0].strip()
+                    elif "using" in details:
+                        recipient = details.split(' using ')[0].split(' ')[-1].strip()
+                    else:
+                        recipient = "Unknown"
+
+                    recipient = recipient[:MAX_LENGTH]
+                    description = details[:MAX_LENGTH]
+
+                    print("amount",amount)
+
+                    duplicate_exists = False
+                    if transaction_type == "income":
+                        duplicate_exists = Income.objects.filter(
+                            user=user,
+                            amount=amount,
+                            date=transaction_date,
+                            income_source=recipient,
+                            description=details
+                        ).exists()
+                        if not duplicate_exists:
+                            Income.objects.create(
+                                user=user,
+                                amount=amount,
+                                date=transaction_date,
+                                income_source=recipient,
+                                description=details
+                            )
+                    elif transaction_type == "expense":
+                        duplicate_exists = Expense.objects.filter(
+                            user=user,
+                            amount=amount,
+                            date=transaction_date,
+                            recipient=recipient,
+                            description=details
+                        ).exists()
+                        if not duplicate_exists:
+                            Expense.objects.create(
+                                user=user,
+                                amount=amount,
+                                date=transaction_date,
+                                recipient=recipient,
+                                description=details
+                            )
+                except ValueError:
+                    continue
+
+class GPayTransactionUploadView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = GPayTransactionUploadSerializer(data=request.data)
+        if serializer.is_valid():
+            file = serializer.validated_data['file']
+            start_date = serializer.validated_data['start_date']
+            end_date = serializer.validated_data['end_date']
+
+            file_content = file.read().decode('utf-8')
+            parse_gpay_html(file_content, start_date, end_date, request.user)
+
+            return Response({"message": "Transactions added successfully."}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

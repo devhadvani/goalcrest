@@ -9,6 +9,7 @@ from .views import (
     CategoryListAPIView,
     BudgetListCreateAPIView,
     TransactionListCreateAPIView,
+    GPayTransactionUploadView
 )
 
 urlpatterns = [
@@ -28,4 +29,6 @@ urlpatterns = [
         TransactionListCreateAPIView.as_view(),
         name="transaction-list-create",
     ),
+    path('upload-transactions/', GPayTransactionUploadView.as_view(), name='upload-transactions'),
 ]
+

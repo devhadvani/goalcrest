@@ -101,3 +101,9 @@ class TransactionSerializer(serializers.ModelSerializer):
             "date",
             "description",
         ]
+
+
+class GPayTransactionUploadSerializer(serializers.Serializer):
+    file = serializers.FileField()
+    start_date = serializers.DateField()
+    end_date = serializers.DateField()

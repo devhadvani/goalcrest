@@ -44,5 +44,5 @@ class CustomActivationEmail(ActivationEmail):
             subject=self.subject,
             body=email_body,
             to=to
-        )
+        ),
 
