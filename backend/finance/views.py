@@ -150,8 +150,15 @@ from django.utils import timezone
 import re
 
 
-def parse_gpay_html(file_content, start_date, end_date, user):
+def parse_gpay_html(file_content, start_date, end_date, user, exclude_gt, exclude_lt):
     MAX_LENGTH = 100  
+    print("egt", exclude_gt)
+    print("elt", exclude_lt)
+    
+
+    exclude_gt = exclude_gt if exclude_gt is not None else float('inf')  # Default to infinity if not provided
+    exclude_lt = exclude_lt if exclude_lt is not None else float('-inf')  # Default to negative infinity if not provided
+
     start_date = datetime.combine(start_date, datetime.min.time())
     end_date = datetime.combine(end_date, datetime.max.time())
 
@@ -171,7 +178,7 @@ def parse_gpay_html(file_content, start_date, end_date, user):
                 date_text = date_text.replace("Sept", "Sep")
                 try:
                     transaction_date = datetime.strptime(date_text, '%d %b %Y, %H:%M:%S')
-                    print("td",transaction_date)
+                    print("td", transaction_date)
                     if not (start_date <= transaction_date <= end_date):
                         continue
 
@@ -185,7 +192,7 @@ def parse_gpay_html(file_content, start_date, end_date, user):
 
                     # Extract amount
                     amount_match = amount_pattern.search(details)
-                    amount = float(amount_match.group(1).replace(',', '')) if amount_match else 0.0   
+                    amount = float(amount_match.group(1).replace(',', '')) if amount_match else 0.0
 
                     # Extract recipient or source
                     if transaction_type == "income":
@@ -200,43 +207,47 @@ def parse_gpay_html(file_content, start_date, end_date, user):
                     recipient = recipient[:MAX_LENGTH]
                     description = details[:MAX_LENGTH]
 
-                    print("amount",amount)
+                    print("amount", amount)
 
                     duplicate_exists = False
-                    if transaction_type == "income":
-                        duplicate_exists = Income.objects.filter(
-                            user=user,
-                            amount=amount,
-                            date=transaction_date,
-                            income_source=recipient,
-                            description=details
-                        ).exists()
-                        if not duplicate_exists:
-                            Income.objects.create(
+                    
+                    # Filter transactions based on exclude_gt and exclude_lt
+                    if exclude_lt <= amount <= exclude_gt:
+                        if transaction_type == "income":
+                            duplicate_exists = Income.objects.filter(
                                 user=user,
                                 amount=amount,
                                 date=transaction_date,
                                 income_source=recipient,
                                 description=details
-                            )
-                    elif transaction_type == "expense":
-                        duplicate_exists = Expense.objects.filter(
-                            user=user,
-                            amount=amount,
-                            date=transaction_date,
-                            recipient=recipient,
-                            description=details
-                        ).exists()
-                        if not duplicate_exists:
-                            Expense.objects.create(
+                            ).exists()
+                            if not duplicate_exists:
+                                Income.objects.create(
+                                    user=user,
+                                    amount=amount,
+                                    date=transaction_date,
+                                    income_source=recipient,
+                                    description=details
+                                )
+                        elif transaction_type == "expense":
+                            duplicate_exists = Expense.objects.filter(
                                 user=user,
                                 amount=amount,
                                 date=transaction_date,
                                 recipient=recipient,
                                 description=details
-                            )
+                            ).exists()
+                            if not duplicate_exists:
+                                Expense.objects.create(
+                                    user=user,
+                                    amount=amount,
+                                    date=transaction_date,
+                                    recipient=recipient,
+                                    description=details
+                                )
                 except ValueError:
                     continue
+
 
 class GPayTransactionUploadView(APIView):
     def post(self, request, *args, **kwargs):
@@ -245,9 +256,11 @@ class GPayTransactionUploadView(APIView):
             file = serializer.validated_data['file']
             start_date = serializer.validated_data['start_date']
             end_date = serializer.validated_data['end_date']
+            exclude_gt = serializer.validated_data.get('exclude_gt')  # Default to None if not provided
+            exclude_lt = serializer.validated_data.get('exclude_lt')  # Default to None if not provided
 
             file_content = file.read().decode('utf-8')
-            parse_gpay_html(file_content, start_date, end_date, request.user)
+            parse_gpay_html(file_content, start_date, end_date, request.user,exclude_gt,exclude_lt)
 
             return Response({"message": "Transactions added successfully."}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

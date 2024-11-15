@@ -107,3 +107,5 @@ class GPayTransactionUploadSerializer(serializers.Serializer):
     file = serializers.FileField()
     start_date = serializers.DateField()
     end_date = serializers.DateField()
+    exclude_gt = serializers.IntegerField(required=False)
+    exclude_lt = serializers.IntegerField(required=False)
