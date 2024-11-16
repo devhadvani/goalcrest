@@ -2,23 +2,19 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchIncomes, fetchExpenses } from '../features/finance/financeSlice';
 import IncomeExpenseCalendar from '../components/IncomeExpenseCalendar';
+import IncomeExpenseList from '../components/IncomeExpenseList'; // Import the new component
 import {
   Box,
   Typography,
-  Button,
   Grid,
   Card,
   CardContent,
   CircularProgress,
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 
 const Dashboard = () => {
   const dispatch = useDispatch();
   const { incomes, expenses, loading, error } = useSelector(state => state.finance);
-  const [showIncomeModal, setShowIncomeModal] = useState(false);
-  const [showExpenseModal, setShowExpenseModal] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(new Date());
 
   useEffect(() => {
@@ -30,12 +26,15 @@ const Dashboard = () => {
   const totalExpenses = expenses.reduce((acc, expense) => acc + parseFloat(expense.amount), 0);
   const balance = totalIncome - totalExpenses;
 
-  return (
-    <Box sx={{ p: 4, bgcolor: '#fffff' }}>
-      {/* <Typography variant="h4" align="center" gutterBottom>
-        Dashboard
-      </Typography> */}
+  const filteredIncomes = incomes.filter(
+    income => new Date(income.date).getMonth() === selectedMonth.getMonth()
+  );
+  const filteredExpenses = expenses.filter(
+    expense => new Date(expense.date).getMonth() === selectedMonth.getMonth()
+  );
 
+  return (
+    <Box sx={{ p: 4, bgcolor: '#ffffff' }}>
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
           <CircularProgress />
@@ -77,22 +76,20 @@ const Dashboard = () => {
       )}
 
       <Box sx={{ mt: 6 }}>
-        {/* Calendar and Placeholder Container */}
+        {/* Calendar and Income/Expense List Container */}
         <Grid container spacing={2}>
           {/* Calendar Component (70%) */}
           <Grid item xs={12} md={8}>
             <IncomeExpenseCalendar setSelectedMonth={setSelectedMonth} />
           </Grid>
 
-          {/* Placeholder Component (30%) */}
+          {/* Income and Expense List Component (30%) */}
           <Grid item xs={12} md={4}>
-            <Card sx={{ bgcolor: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', boxShadow: 3 }}>
-              <CardContent>
-                <Typography variant="h6" align="center" color="textSecondary">
-                   Coming Soon
-                </Typography>
-              </CardContent>
-            </Card>
+            <IncomeExpenseList
+              selectedMonth={selectedMonth}
+              incomeData={filteredIncomes}
+              expenseData={filteredExpenses}
+            />
           </Grid>
         </Grid>
       </Box>
