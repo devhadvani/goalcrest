@@ -219,10 +219,15 @@ const IncomeExpenseCalendar = () => {
           <div className="modal-content">
             <div className="modal-header">
               <h2>{selectedDate.toLocaleDateString()}</h2>
+              <button className="" onClick={() => setShowModal(false)}>Add income</button>
+              <button className="" onClick={() => setShowModal(false)}>Add expense</button>
               <button className="close-button" onClick={() => setShowModal(false)}>×</button>
             </div>
             <div className="modal-body">
               <div className="records-container">
+                <div >
+                  
+                  </div>
                 <div className="records-section income-section">
                   <h3>Income Records</h3>
                   <div className="records-list">
