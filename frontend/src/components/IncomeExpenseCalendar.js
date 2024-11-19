@@ -30,6 +30,9 @@ const IncomeExpenseCalendar = () => {
   const [showModal, setShowModal] = useState(false);
   const [hoveredRecord, setHoveredRecord] = useState(null);
   const [editingRecord, setEditingRecord] = useState(null);
+  const [isAddingIncome, setIsAddingIncome] = useState(false);
+  const [showAddForm, setShowAddForm] = useState(false);
+
   console.log(editingRecord);
   useEffect(() => {
     dispatch(fetchIncomes());
@@ -219,8 +222,55 @@ const IncomeExpenseCalendar = () => {
           <div className="modal-content">
             <div className="modal-header">
               <h2>{selectedDate.toLocaleDateString()}</h2>
-              <button className="" onClick={() => setShowModal(false)}>Add income</button>
-              <button className="" onClick={() => setShowModal(false)}>Add expense</button>
+              {/* <button className="" onClick={() => setShowModal(false)}>Add income</button>
+              <button className="" onClick={() => setShowModal(false)}>Add expense</button> */}
+
+<div className="actions">
+                  {!showAddForm ? (
+                    <div className="button-group">
+                      <button 
+                        onClick={() => {
+                          setIsAddingIncome(true);
+                          setShowAddForm(true);
+                        }}
+                        className="action-button income"
+                      >
+                        Add Income
+                      </button>
+                      <button 
+                        onClick={() => {
+                          setIsAddingIncome(false);
+                          setShowAddForm(true);
+                        }}
+                        className="action-button expense"
+                      >
+                        Add Expense
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="add-form-container">
+                      {isAddingIncome ? (
+                        <AddIncome 
+                          initialDate={formatDate(selectedDate)}
+                          onSuccess={() => {
+                            setShowAddForm(false);
+                            handleDayClick(selectedDate);
+                          }}
+                          onCancel={() => setShowAddForm(false)}
+                        />
+                      ) : (
+                        <AddExpense 
+                          initialDate={formatDate(selectedDate)}
+                          onSuccess={() => {
+                            setShowAddForm(false);
+                            handleDayClick(selectedDate);
+                          }}
+                          onCancel={() => setShowAddForm(false)}
+                        />
+                      )}
+                    </div>
+                  )}
+                </div>
               <button className="close-button" onClick={() => setShowModal(false)}>×</button>
             </div>
             <div className="modal-body">
