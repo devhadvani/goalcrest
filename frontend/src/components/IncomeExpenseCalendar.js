@@ -34,6 +34,7 @@ const IncomeExpenseCalendar = () => {
   const [showAddForm, setShowAddForm] = useState(false);
 
   console.log(editingRecord);
+
   useEffect(() => {
     dispatch(fetchIncomes());
     dispatch(fetchExpenses());
@@ -249,6 +250,7 @@ const IncomeExpenseCalendar = () => {
                     </div>
                   ) : (
                     <div className="add-form-container">
+                            <button className="" onClick={() => setShowAddForm(false)}>rehn do</button>
                       {isAddingIncome ? (
                         <AddIncome 
                           initialDate={formatDate(selectedDate)}
@@ -268,6 +270,7 @@ const IncomeExpenseCalendar = () => {
                           onCancel={() => setShowAddForm(false)}
                         />
                       )}
+                   
                     </div>
                   )}
                 </div>
