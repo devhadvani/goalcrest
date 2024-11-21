@@ -226,6 +226,16 @@ const IncomeExpenseCalendar = () => {
               {/* <button className="" onClick={() => setShowModal(false)}>Add income</button>
               <button className="" onClick={() => setShowModal(false)}>Add expense</button> */}
 
+<button
+  className="close-button"
+  onClick={() => {
+    setShowModal(false);
+    setShowAddForm(false);
+  }}
+>
+  x
+</button>
+   </div>
 <div className="actions">
                   {!showAddForm ? (
                     <div className="button-group">
@@ -250,7 +260,7 @@ const IncomeExpenseCalendar = () => {
                     </div>
                   ) : (
                     <div className="add-form-container">
-                            <button className="" onClick={() => setShowAddForm(false)}>rehn do</button>
+                            <button className="close-button" onClick={() => setShowAddForm(false)}>x</button>
                       {isAddingIncome ? (
                         <AddIncome 
                           initialDate={formatDate(selectedDate)}
@@ -273,8 +283,7 @@ const IncomeExpenseCalendar = () => {
                    
                     </div>
                   )}
-                </div>
-              <button className="close-button" onClick={() => setShowModal(false)}>×</button>
+             
             </div>
             <div className="modal-body">
               <div className="records-container">
