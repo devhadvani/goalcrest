@@ -76,7 +76,7 @@ export const addExpense = createAsyncThunk('finance/addExpense', async (expenseD
   }
 });
 
-export const fetchCategories = createAsyncThunk('finance/fetchCategories', async (_, thunkAPI) => {
+export const fetchCategories = createAsyncThunk('finance/fetchCategories', async (category, thunkAPI) => {
   try {
     console.log("printitn v")
     const state = thunkAPI.getState();
@@ -88,9 +88,9 @@ export const fetchCategories = createAsyncThunk('finance/fetchCategories', async
       },
     });
     // Filter only 'income' categories
-    const incomeCategories = response.data.filter(category => category.type === 'income');
-    console.log("income",incomeCategories)
-    return incomeCategories;
+    console.log('cate',category)
+    console.log("rd",response.data)
+    return response.data;
   } catch (error) {
     return thunkAPI.rejectWithValue(error.response.data);
   }

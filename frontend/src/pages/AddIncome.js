@@ -29,7 +29,7 @@ const AddIncome = ({ initialData = null, onSubmit, onCancel }) => {
 
   useEffect(() => {
     if (categories.length === 0) {
-      dispatch(fetchCategories());
+      dispatch(fetchCategories("income"));
     }
   }, [dispatch, categories.length]);
 
@@ -117,7 +117,9 @@ const AddIncome = ({ initialData = null, onSubmit, onCancel }) => {
             {loading ? (
               <option>Loading...</option>
             ) : (
-              categories.map((cat) => (
+              categories
+              .filter((cat) => cat.type === "income")
+              .map((cat) => (
                 <option key={cat.id} value={cat.id}>
                   {cat.name}
                 </option>
