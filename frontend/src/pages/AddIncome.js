@@ -105,29 +105,7 @@ const AddIncome = ({ initialData = null, onSubmit, onCancel }) => {
           />
         </div>
 
-        <div className="form-group">
-          <label htmlFor="category">Category:</label>
-          <select
-            id="category"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            required
-          >
-            <option value="">Select category</option>
-            {loading ? (
-              <option>Loading...</option>
-            ) : (
-              categories
-              .filter((cat) => cat.type === "income")
-              .map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.name}
-                </option>
-              ))
-            )}
-          </select>
-        </div>
-
+    
         <div className="form-group">
           <label htmlFor="date">Date</label>
           <input
