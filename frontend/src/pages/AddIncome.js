@@ -2,19 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { addIncome, updateIncome, fetchCategories } from '../features/finance/financeSlice';
 
-const AddIncome = ({ initialData = null, onSubmit, onCancel }) => {
+const AddIncome = ({ initialDate ,initialData= null, onSubmit, onCancel }) => {
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
-  const [date, setDate] = useState('');
+  const [date, setDate] = useState(initialDate || '');
   const [isRecurring, setIsRecurring] = useState(false);
   const [recurrenceInterval, setRecurrenceInterval] = useState('');
   
   const dispatch = useDispatch();
   const { categories = [], loading } = useSelector((state) => state.finance);
-
+  
   // Initialize form with data if provided
   useEffect(() => {
+    console.log("iniial date",initialDate)
     if (initialData) {
       setAmount(initialData.amount.toString());
       setDescription(initialData.description || '');
@@ -118,7 +119,7 @@ const AddIncome = ({ initialData = null, onSubmit, onCancel }) => {
       <option>Loading...</option>
     ) : (
       categories
-        .filter((cat) => cat.type === "expense") // Filter only expense categories
+        .filter((cat) => cat.type === "income") // Filter only expense categories
         .map((cat) => (          
           <option key={cat.id} value={cat.id}>
             {cat.name}
@@ -138,6 +139,7 @@ const AddIncome = ({ initialData = null, onSubmit, onCancel }) => {
             onChange={(e) => setDate(e.target.value)}
             required
           />
+          
         </div>
 
         <div className="form-group checkbox-group">
